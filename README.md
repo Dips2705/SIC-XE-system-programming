@@ -1,21 +1,23 @@
 SIC/XE Machine Shell, Assembler, Loader and Linker
 ==================================================
 
-# How to compile the code
+## How to compile the code
 
 	$ make
 
-# How to run
+## How to run
 
-	$ ./20131565.out
+	$ ./sicsim.out
 
-# How to clean the file
+## How to clean the file
 
 	$ make clean
 
-# Reference
+## Reference
 
 * Leland L. Beck, System Software: An Introduction to Systems Programming (3rd ed), Addison-Wesley
+
+
 
 -------------------------------------------------
 
