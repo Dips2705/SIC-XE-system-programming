@@ -218,6 +218,7 @@ int is_in_dir(char filename[MAX_LEN])
 	DIR* dir = opendir(".");
 	// 파일 순차접근에 사용되는 포인터
 	struct dirent* p;
+	struct stat fs;
 	
 	for(i = 0; p = readdir(dir); i++)
 	{
@@ -226,8 +227,13 @@ int is_in_dir(char filename[MAX_LEN])
 	}
 
 	closedir(dir);
-	if(ret) return 1;
-	else return 0;
+	if(!ret) return 0;
+	else
+	{
+		stat(filename, &fs);
+		if(fs.st_mode & S_IFDIR) return 0;
+		else return 1;
+	}
 }
 
 // return 0 : !error
@@ -326,7 +332,7 @@ void print_error(int error)
 				printf("\t                     [ value  :   0x00  ~  0xFF  ]\n"); break;
 		case 4: printf("\tError: Invalid Address Range. [start address <= end address]\n"); break;
 		case 5: printf("\tError: Invalid Mnemonic. [See the opcodelist.]\n");
-		case 6: printf("\tError: Invalid Filename. [It is not in directory.]\n"); break;
+		case 6: printf("\tError: Invalid Filename.\n"); break;
 		default: break;	
 	}
 }
