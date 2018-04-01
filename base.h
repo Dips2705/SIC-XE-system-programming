@@ -27,4 +27,6 @@ void clear_history();
 
 void history_();
 
+void type_(char filename[MAX_LEN]);
+
 #endif

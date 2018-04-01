@@ -3,10 +3,10 @@
 #define MAX_TOKEN 1001
 #define MAX_VAL 256
 #define MAX_ADDR 1048576
-#define NUM_OF_COMM 17
+#define NUM_OF_COMM 20
 
 // 명령어 열거형
-// 0 ~ 16 까지의 정수가 mapping된다.
+// 0 ~ 19 까지의 정수가 mapping된다.
 enum commands
 {
 	_H,
@@ -26,6 +26,9 @@ enum commands
 	_RESET,
 	_OPCODE,
 	_OPCODE_LIST,
+	_ASSEMBLE,
+	_TYPE,
+	_SYMBOL,
 };
 
 // 명령어 문자열 상수 배열
@@ -48,6 +51,9 @@ const char* command_list[NUM_OF_COMM] =
 	"reset",
 	"opcode",
 	"opcodelist",
+	"assemble",
+	"type",
+	"symbol"
 };
 
 // 요약: 명령어 번호와 매개변수들을 받아서 실행하는 함수
@@ -94,6 +100,13 @@ int run(int comm, int para1, int para2, int para3, int token_size, char token[MA
 			break;
 		case _OPCODE_LIST:
 			opcode_list_();
+			break;
+		case _ASSEMBLE:
+			break;
+		case _TYPE:
+			type_(token[1]);
+			break;
+		case _SYMBOL:
 			break;
 		default:
 			break;
@@ -198,6 +211,25 @@ int str_to_val(char* str, int addr_mode)
 	return ret;
 }
 
+int is_in_dir(char filename[MAX_LEN])
+{
+	int i, ret = 0;
+	// 현재 디렉터리 포인터
+	DIR* dir = opendir(".");
+	// 파일 순차접근에 사용되는 포인터
+	struct dirent* p;
+	
+	for(i = 0; p = readdir(dir); i++)
+	{
+		int len;
+		if(!strcmp(filename, p->d_name)) ret += 1;
+	}
+
+	closedir(dir);
+	if(ret) return 1;
+	else return 0;
+}
+
 // return 0 : !error
 // return 1~4 : error
 // 요약: 입력받은 문자열을 다루기 쉬운형태로 가공하는 함수
@@ -269,6 +301,11 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 		if(tsz != 2) return 2;
 		if(p1 == -1) return 5;
 	}
+	else if(comm_num == _TYPE)
+	{
+		if(tsz != 2) return 2;
+		if(!is_in_dir(token[1])) return 6;
+	}
 	else if(tsz > 1) return 2;
 	
 	// 오류가 없을 경우, 값을 갱신하고 0을 반환
@@ -289,6 +326,7 @@ void print_error(int error)
 				printf("\t                     [ value  :   0x00  ~  0xFF  ]\n"); break;
 		case 4: printf("\tError: Invalid Address Range. [start address <= end address]\n"); break;
 		case 5: printf("\tError: Invalid Mnemonic. [See the opcodelist.]\n");
+		case 6: printf("\tError: Invalid Filename. [It is not in directory.]\n"); break;
 		default: break;	
 	}
 }

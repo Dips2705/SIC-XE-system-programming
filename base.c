@@ -23,6 +23,9 @@ void help_()
 	printf("\treset\n");
 	printf("\topcode mnemonic\n");
 	printf("\topcodelist\n");
+	printf("\tassemble filename\n");
+	printf("\ttype filename\n");
+	printf("\tsymbol\n");
 }
 
 // 요약: 현재 디렉터리의 파일 리스트를 출력하는 함수
@@ -133,4 +136,13 @@ void history_()
 		printf("%c[0m", 27);
 		printf(" %s", it->comm);
 	}
+}
+
+void type_(char filename[MAX_LEN])
+{
+	FILE* fp = fopen(filename, "r");
+	char str[MAX_LEN];
+	printf("\n");
+	while(fgets(str, MAX_LEN, fp) != NULL) printf("\t%s", str);
+	printf("\n");
 }
