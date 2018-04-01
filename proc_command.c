@@ -332,7 +332,7 @@ void print_error(int error)
 				printf("\t                     [ value  :   0x00  ~  0xFF  ]\n"); break;
 		case 4: printf("\tError: Invalid Address Range. [start address <= end address]\n"); break;
 		case 5: printf("\tError: Invalid Mnemonic. [See the opcodelist.]\n");
-		case 6: printf("\tError: Invalid Filename.\n"); break;
+		case 6: printf("\tError: Invalid File Name.\n"); break;
 		default: break;	
 	}
 }
