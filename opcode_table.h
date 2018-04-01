@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #define MAX_LEN 1001
 
+// hash table에 추가 될 node 구조체
+// opcode, mnemonic, format, 다음 node를 가리킬 포인터를 저장한다.
 typedef struct _hash_node
 {
 	int opcode;
