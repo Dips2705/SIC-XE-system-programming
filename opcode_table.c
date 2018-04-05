@@ -15,10 +15,10 @@ void make_table()
 	FILE* fp = fopen("./opcode.txt", "r");
 	int opcode;
 	char mnemonic[MAX_LEN];
-	char format[MAX_LEN];
+	int format, tmp;
 	
 	for(i = 0; i < TABLE_SIZE; i++) hash_table[i] = NULL;
-	while(fscanf(fp, "%X %s %s", &opcode, mnemonic, format) != EOF)
+	while(fscanf(fp, "%X %s %d/%d", &opcode, mnemonic, &format, &tmp) != EOF)
 		add_table(opcode, mnemonic, format);
 	fclose(fp);
 }
@@ -49,7 +49,7 @@ void clear_table()
 //    	 hash table의 basket에 노드를 추가한다.
 //    	 충돌이 있을 경우 해당 노드의 다음 노드에 새 노드를 추가한다.
 // 반환: 없음.
-void add_table(int opcode, char mnemonic[MAX_LEN], char format[MAX_LEN])
+void add_table(int opcode, char mnemonic[MAX_LEN], int format)
 {
 	int idx = get_hash(mnemonic);
 	hash_node* it = hash_table[idx];
@@ -59,7 +59,7 @@ void add_table(int opcode, char mnemonic[MAX_LEN], char format[MAX_LEN])
 	hash_node* n_node = (hash_node*)malloc(sizeof(hash_node));
 	n_node->opcode = opcode;
 	strcpy(n_node->mnemonic, mnemonic);
-	strcpy(n_node->format, format);	
+	n_node->format = format;
 	n_node->next = NULL;
 	
 	if(it == NULL)

@@ -12,7 +12,7 @@ typedef struct _hash_node
 {
 	int opcode;
 	char mnemonic[MAX_LEN];
-	char format[MAX_LEN];
+	int format;
 	struct _hash_node* next;
 } hash_node;
 
@@ -20,7 +20,7 @@ void make_table();
 
 void clear_table();
 
-void add_table(int opcode, char mnemonic[MAX_LEN], char format[MAX_LEN]);
+void add_table(int opcode, char mnemonic[MAX_LEN], int format);
 
 int get_hash(char key[MAX_LEN]);
 
