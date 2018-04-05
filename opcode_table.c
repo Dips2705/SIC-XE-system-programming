@@ -52,27 +52,13 @@ void clear_table()
 void add_table(int opcode, char mnemonic[MAX_LEN], int format)
 {
 	int idx = get_hash(mnemonic);
-	hash_node* it = hash_table[idx];
-	hash_node* prev;
 
-	// 새로운 노드 동적할당 및 초기화
 	hash_node* n_node = (hash_node*)malloc(sizeof(hash_node));
 	n_node->opcode = opcode;
 	strcpy(n_node->mnemonic, mnemonic);
 	n_node->format = format;
-	n_node->next = NULL;
-	
-	if(it == NULL)
-	{
-		hash_table[idx] = n_node;
-	   	return;
-	}
-	while(it != NULL)
-	{
-		prev = it;
-		it = it->next;
-	}
-	prev->next = n_node;
+	n_node->next = hash_table[idx];
+	hash_table[idx] = n_node;
 }
 
 // 요약: key에 해당하는 hashing값을 반환하는 함수
