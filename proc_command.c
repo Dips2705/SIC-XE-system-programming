@@ -312,6 +312,12 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 		if(tsz != 2) return 2;
 		if(!is_in_dir(token[1])) return 6;
 	}
+	else if(comm_num == _ASSEMBLE)
+	{
+		if(tsz != 2) return 2;
+		if(!is_in_dir(token[1])) return 6;
+		if(strcmp(token[1] + strlen(token[1]) - 4, ".asm")) return 6;
+	}
 	else if(tsz > 1) return 2;
 	
 	// 오류가 없을 경우, 값을 갱신하고 0을 반환
