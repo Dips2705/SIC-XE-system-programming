@@ -363,7 +363,7 @@ int make_intermediate_file(char* filename, int* line_num)
 					else if(!strcmp(assem_token[0], "RESB"))
 					{
 						int val = str_to_dec(assem_token[1], MAX_WORD);
-						// error : invalid operand (out of 20bits)
+						// error : invalid operand (out of range)
 						if(val == -1) return error = 1;
 						strcpy(op, "RESB");
 						strcpy(p1, assem_token[1]);
@@ -372,13 +372,12 @@ int make_intermediate_file(char* filename, int* line_num)
 					else if(!strcmp(assem_token[0], "RESW"))
 					{	
 						int val = str_to_dec(assem_token[1], MAX_WORD);
-						// error : invalid operand (out of 20bits)
+						// error : invalid operand (out of range)
 						if(val == -1) return error = 1;
 						strcpy(op, "RESW");
 						strcpy(p1, assem_token[1]);
 						loc_inc = val * 3;
 					}
-					
 					strcpy(p2, ".");
 				}
 				type = DIRECTIVE_;
@@ -458,17 +457,17 @@ int make_intermediate_file(char* filename, int* line_num)
 						// error : invalid operand (out of 12bits)
 						if(str_to_dec(assem_token[1], 0x1000) < 0 && !is_valid_symbol(assem_token[1]))
 							return error = 1;
+						loc_inc = 3;
 					}
 					else // format 4
 					{
 						// error : invalid operand (out of 20bits)
 						if(str_to_dec(assem_token[1], 0x100000) < 0 && !is_valid_symbol(assem_token[1]))
 							return error = 1;
+						loc_inc = 4;
 					}
-
+					
 					strcpy(p1, assem_token[1]);	
-					if(!e) loc_inc = 3;
-					else loc_inc = 4;
 				}
 				type = OPERATOR_;
 			}
