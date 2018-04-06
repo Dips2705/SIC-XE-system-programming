@@ -35,6 +35,7 @@ D8   	RD   		3/4
 AC    	RMO  		2      
 4C   	RSUB 		3/4    
 A4    	SHIFTL 		2     
+A8		SHIFTR		2     
 F0  	SIO    		1    
 EC   	SSK    		3/4   
 0C   	STA    		3/4   

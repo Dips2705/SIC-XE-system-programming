@@ -19,7 +19,7 @@ int tokenize(char* str, char token[MAX_TOKEN][MAX_LEN]);
 
 int char_to_hexa(char c);
 
-int str_to_val(char* str, int addr_mode);
+int str_to_val(char* str, int boundary);
 
 int is_in_dir(char filename[MAX_LEN]);
 

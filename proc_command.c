@@ -1,9 +1,9 @@
 #include "proc_command.h"
 #define MAX_LEN 1001
 #define MAX_TOKEN 1001
-#define MAX_VAL 256
-#define MAX_ADDR 1048576
-#define NUM_OF_COMM 20
+#define MAX_VAL 0x100
+#define MAX_ADDR 0x100000
+#define COMM_NUM 20
 
 // 명령어 열거형
 // 0 ~ 19 까지의 정수가 mapping된다.
@@ -32,7 +32,7 @@ enum commands
 };
 
 // 명령어 문자열 상수 배열
-const char* command_list[NUM_OF_COMM] = 
+const char* command_list[COMM_NUM] = 
 {
 	"h",
 	"help",
@@ -102,6 +102,7 @@ int run(int comm, int para1, int para2, int para3, int token_size, char token[MA
 			opcode_list_();
 			break;
 		case _ASSEMBLE:
+			assemble_(token[1]);
 			break;
 		case _TYPE:
 			type_(token[1]);
@@ -183,18 +184,13 @@ int char_to_hexa(char c)
 // 		 해당하는 16진수 값을 반환한다.
 // 		 invalid한 문자가 포함되거나, 값의 범위를
 // 		 벗어나는 오류를 체크한다.
-// 		 addr_mode가 1이면 주소값 기준, 0이면 1byte 값을
-// 		 기준으로 범위를 체크한다.
 // 반환: -1 = invalid한 문자 포함
 // 		 -2 = out of range (0 ~ 2^8-1) or (0 ~ 2^20-1)
 //		 ret = 16진수 값
-int str_to_val(char* str, int addr_mode)
+int str_to_val(char* str, int boundary)
 {	
 	int ret = 0;
 	int i, len = strlen(str), val;
-	int boundary = MAX_VAL;
-
-	if(addr_mode) boundary = MAX_ADDR;
 
 	for(i = 0; i < len; i++)
 	{
@@ -245,74 +241,74 @@ int is_in_dir(char filename[MAX_LEN])
 // 반환: 0 = 오류 없음 / 1~5 = 오류번호 / 1565 = 입력 없음.
 int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* token_size, char token[MAX_TOKEN][MAX_LEN])
 {
-	int comm_num, p1 = -1, p2 = -1, p3 = -1, tsz = 0;
+	int _comm = -1, p1 = -1, p2 = -1, p3 = -1, tsz = 0;
 
 	// 토큰화 하고, 토큰의 개수를 tsz에 반환
 	tsz = tokenize(str, token);
 	
 	// 명령어 번호를 찾는 과정
-	for(comm_num = 0; comm_num < NUM_OF_COMM; comm_num++)
-		if(!strcmp(token[0], command_list[comm_num])) break;
-	*comm = comm_num;
+	for(_comm = 0; _comm < COMM_NUM; _comm++)
+		if(!strcmp(token[0], command_list[_comm])) break;
+	*comm = _comm;
 
 	// 오류 처리
 	if(!tsz) return 1565;
-	else if(comm_num >= NUM_OF_COMM || !strlen(token[0]) || tsz == -1) return 1;
+	else if(_comm >= COMM_NUM || !strlen(token[0]) || tsz == -1) return 1;
 	else if(tsz == -2) return 2;
 	
-	else if(comm_num == _DU || comm_num == _DUMP)
+	else if(_comm == _DU || _comm == _DUMP)
 	{
 		if(tsz > 3) return 2;
 		else if(tsz == 2)
 		{
-			p1 = str_to_val(token[1], 1);
+			p1 = str_to_val(token[1], MAX_ADDR);
 			if(p1 == -1) return 2;
 			else if(p1 == -2) return 3;
 		}
 		else if(tsz == 3)
 		{
-			p1 = str_to_val(token[1], 1);
-			p2 = str_to_val(token[2], 1);
+			p1 = str_to_val(token[1], MAX_ADDR);
+			p2 = str_to_val(token[2], MAX_ADDR);
 
 			if(p1 == -1 || p2 == -1) return 2;
 			else if(p1 == -2 || p2 == -2) return 3;
 			else if(p1 > p2) return 4;
 		}
 	}
-	else if(comm_num == _E || comm_num == _EDIT)
+	else if(_comm == _E || _comm == _EDIT)
 	{
 		if(tsz != 3) return 2;
 
-		p1 = str_to_val(token[1], 1);
-		p2 = str_to_val(token[2], 0);
+		p1 = str_to_val(token[1], MAX_ADDR);
+		p2 = str_to_val(token[2], MAX_VAL);
 
 		if(p1 == -1 || p2 == -1) return 2;
 		else if(p1 == -2 || p2 == -2) return 3;
 	}
-	else if(comm_num == _F || comm_num == _FILL)
+	else if(_comm == _F || _comm == _FILL)
 	{
 		if(tsz != 4) return 2;
 
-		p1 = str_to_val(token[1], 1);
-		p2 = str_to_val(token[2], 1);
-		p3 = str_to_val(token[3], 0);
+		p1 = str_to_val(token[1], MAX_ADDR);
+		p2 = str_to_val(token[2], MAX_ADDR);
+		p3 = str_to_val(token[3], MAX_VAL);
 
 		if(p1 == -1 || p2 == -1 || p3 == -1) return 2;
 		else if(p1 == -2 || p2 == -2 || p3 == -2) return 3;
 		else if(p1 > p2) return 4;
 	}
-	else if(comm_num == _OPCODE)
+	else if(_comm == _OPCODE)
 	{
 		p1 = get_opcode(token[1]);
 		if(tsz != 2) return 2;
 		if(p1 == -1) return 5;
 	}
-	else if(comm_num == _TYPE)
+	else if(_comm == _TYPE)
 	{
 		if(tsz != 2) return 2;
 		if(!is_in_dir(token[1])) return 6;
 	}
-	else if(comm_num == _ASSEMBLE)
+	else if(_comm == _ASSEMBLE)
 	{
 		if(tsz != 2) return 2;
 		if(!is_in_dir(token[1])) return 6;

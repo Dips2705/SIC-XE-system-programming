@@ -90,6 +90,16 @@ int get_opcode(char key[MAX_LEN])
 	return -1;
 }
 
+int get_format(char key[MAX_LEN])
+{
+	int idx = get_hash(key);
+	
+	hash_node* it = hash_table[idx];
+	for(; it != NULL; it = it->next)
+		if(!strcmp(key, it->mnemonic)) return it->format;
+	return -1;
+}
+
 // 요약: opcode를 출력하는 함수
 // 기능: opcode를 출력한다.
 // 반환: 없음.

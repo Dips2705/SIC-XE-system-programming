@@ -26,6 +26,8 @@ int get_hash(char key[MAX_LEN]);
 
 int get_opcode(char key[MAX_LEN]);
 
+int get_format(char key[MAX_LEN]);
+
 void opcode_(int opcode);
 
 void opcode_list_();

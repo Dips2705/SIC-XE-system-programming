@@ -1,5 +1,5 @@
 #include "memory.h"
-#define MAX_ADDR 1048576
+#define MAX_ADDR 0x100000
 
 // 1Mbyte 가상메모리에 대응되는 배열
 int mem[MAX_ADDR] = {0};

@@ -3,6 +3,7 @@
 #define TABLE_SIZE 100
 
 sym_node* sym_table[TABLE_SIZE];
+int sym_on = 0;
 
 void make_sym_table()
 {
@@ -18,6 +19,7 @@ void make_sym_table()
 	add_symbol(0x4, "S");
 	add_symbol(0x5, "T");
 	add_symbol(0x6, "F");
+	sym_on = 1;
 }
 
 void clear_sym_table()
@@ -33,6 +35,7 @@ void clear_sym_table()
 			it = tmp;
 		}
 	}
+	sym_on = 0;
 }
 
 void add_symbol(int addr, char symbol[SYM_LEN])
