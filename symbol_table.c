@@ -34,6 +34,7 @@ void clear_sym_table()
 			free(it);
 			it = tmp;
 		}
+		sym_table[i] = NULL;
 	}
 	sym_on = 0;
 }

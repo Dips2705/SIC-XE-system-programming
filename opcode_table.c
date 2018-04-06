@@ -39,6 +39,7 @@ void clear_table()
 			free(it);
 			it = tmp;
 		}
+		hash_table[i] = NULL;
 	}
 }
 

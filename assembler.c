@@ -1,13 +1,14 @@
 #include "assembler.h"
 #define MAX_LEN 1001
 #define MAX_TOKEN 1001
+#define MAX_CODE_LINE 10001
 #define MAX_ADDR 0x100000
 #define MAX_WORD 0x1000000
 #define SYM_LEN 31
 #define DIR_NUM 8
 #define REG_NUM 9
 
-char tmp_code[10001][MAX_LEN] = {0};
+char tmp_code[MAX_CODE_LINE][MAX_LEN] = {0};
 char assem_token[MAX_TOKEN][MAX_LEN];
 int assemble_start_flag;
 
