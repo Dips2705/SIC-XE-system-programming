@@ -7,6 +7,9 @@
 #define SYM_LEN 31
 #define DIR_NUM 8
 #define REG_NUM 9
+#define DIRECTIVE_ 1
+#define OPERATOR_ 2
+#define COMMENT_ 3
 
 char tmp_code[MAX_CODE_LINE][MAX_LEN] = {0};
 char assem_token[MAX_TOKEN][MAX_LEN];
@@ -191,8 +194,11 @@ int calc_byte_operand(char* str)
 
 // pass 1
 // ----------------------intermediate format----------------------
-//   n i x e  Loc  Symbol[.]  Operator  Operand1[.]  Operand2[.] 
+// type n i x e  Loc  Symbol[.]  Operator  Operand1[.]  Operand2[.] 
 // ---------------------------------------------------------------
+// type 1 : directive
+// type 2 : operator
+// type 3 : comment
 int make_intermediate_file(char* filename, int* line_num)
 {
 	char str[MAX_LEN];
@@ -209,7 +215,7 @@ int make_intermediate_file(char* filename, int* line_num)
 		int tsz = 0, loc_inc = 0;
 		int is_di = 0, is_op = 0, is_co = 0;
 
-		int n = 0, i = 0, x = 0, e = 0;
+		int type = 0, n = 0, i = 0, x = 0, e = 0;
 		char symbol[SYM_LEN], op[SYM_LEN], p1[SYM_LEN], p2[SYM_LEN];
 
 		tsz = assem_tokenize(str, assem_token, blank_s, blank_e);
@@ -375,8 +381,7 @@ int make_intermediate_file(char* filename, int* line_num)
 					
 					strcpy(p2, ".");
 				}
-				// directive check
-				n = 2, i = 2, x = 2, e = 2;
+				type = DIRECTIVE_;
 			}
 			else if(is_op)
 			{
@@ -465,22 +470,21 @@ int make_intermediate_file(char* filename, int* line_num)
 					if(!e) loc_inc = 3;
 					else loc_inc = 4;
 				}
+				type = OPERATOR_;
 			}
 			else return error = 3; // error : invalid operation code
 
-			fprintf(wp, "%d %d %d %d\t%05X\t%s\t%s\t%s\t%s\n", n, i, x, e, loc_cnt, symbol, op, p1, p2);
+			fprintf(wp, "%d %d %d %d %d\t%05X\t%s\t%s\t%s\t%s\n", type, n, i, x, e, loc_cnt, symbol, op, p1, p2);
 			
 			assemble_start_flag = 1;
 			loc_cnt += loc_inc;
 		}
 		else // it is comment
 		{
+			type = COMMENT_;
 			tsz = comment_tokenize(str, assem_token);
 
-			// comment check
-			n = 4, i = 4, x = 4, e = 4;
-
-			fprintf(wp, "%d %d %d %d\t%05X\t", n, i, x, e, 0x00000);		
+			fprintf(wp, "%d %d %d %d %d\t%05X\t", type, n, i, x, e, 0x00000);		
 			fprintf(wp, "%s\t", assem_token[0]);
 			for(idx = 1; idx < tsz; idx++)
 				fprintf(wp, "%s ", assem_token[idx]);
