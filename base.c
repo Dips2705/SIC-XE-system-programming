@@ -142,8 +142,6 @@ void type_(char filename[MAX_LEN])
 {
 	FILE* fp = fopen(filename, "r");
 	char str[MAX_LEN];
-	printf("\n");
 	while(fgets(str, MAX_LEN, fp) != NULL) printf("\t%s", str);
-	printf("\n");
 	fclose(fp);
 }
