@@ -11,7 +11,7 @@
 #define OPERATOR_ 2
 #define COMMENT_ 3
 
-char tmp_code[MAX_CODE_LINE][MAX_LEN] = {0};
+char program_name[SYM_LEN];
 char assem_token[MAX_TOKEN][MAX_LEN];
 int assemble_start_flag;
 
@@ -199,11 +199,10 @@ int calc_byte_operand(char* str)
 // type 1 : directive
 // type 2 : operator
 // type 3 : comment
-int make_intermediate_file(char* filename, int* line_num)
+int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_num)
 {
-	char str[MAX_LEN];
-	FILE* rp = fopen(filename, "r");	
-	FILE* wp = fopen("itm.dat", "w");
+	FILE* rp = fopen(asm_file, "r");	
+	FILE* wp = fopen(itm_file, "w");
 	int loc_cnt = 0;
 
 	while(fgets(str, MAX_LEN, rp) != NULL)
@@ -222,9 +221,6 @@ int make_intermediate_file(char* filename, int* line_num)
 
 		if(!tsz) continue; // blank line
 		else *line_num += 5;
-
-		// save code
-		strcpy(tmp_code[(*line_num)/5], str);
 
 		// error : program exceeds memory size
 		if(loc_cnt >= MAX_ADDR) return error = 4;
@@ -262,6 +258,7 @@ int make_intermediate_file(char* filename, int* line_num)
 				
 				// error : duplicate symbol
 				if(is_in_symbol_table(symbol)) return error = 2;
+				else if(!strcmp(assem_token[1], "START")) strcpy(program_name, symbol);
 				else add_symbol(loc_cnt, symbol);
 
 				// pull the tokens forward
@@ -466,7 +463,6 @@ int make_intermediate_file(char* filename, int* line_num)
 							return error = 1;
 						loc_inc = 4;
 					}
-					
 					strcpy(p1, assem_token[1]);	
 				}
 				type = OPERATOR_;
@@ -496,45 +492,48 @@ int make_intermediate_file(char* filename, int* line_num)
 	return 0;
 }
 
-void print_assemble_error(int error, int n)
+void print_assemble_error(int error, char* str, int n)
 {
 	switch(error)
 	{
 		case 1: printf("\tAssembler Error: Invalid Syntax.\n");
-				printf("\t==> [line:%d] %s", n, tmp_code[n/5]); break;
+				printf("\t==> [line:%d] %s", n, str); break;
 		case 2: printf("\tAssembler Error: Duplicate Symbol.\n");
-				printf("\t==> [line:%d] %s", n, tmp_code[n/5]); break;
+				printf("\t==> [line:%d] %s", n, str); break;
 		case 3: printf("\tAssembler Error: Invalid Operation Code.\n");
-				printf("\t==> [line:%d] %s", n, tmp_code[n/5]); break;
+				printf("\t==> [line:%d] %s", n, str); break;
 		case 4: printf("\tAssembler Error: This program exceeds SIC/XE memory size.\n");
-				printf("\t==> [line:%d] %s", n, tmp_code[n/5]); break;
+				printf("\t==> [line:%d] %s", n, str); break;
 		default: break;
 	}
 }
 
-void assemble_(char* filename)
+void assemble_(char* asm_file)
 {
-	char lst_filename[MAX_LEN], obj_filename[MAX_LEN];
-	int len = strlen(filename);
+	char str[MAX_LEN];
+	char lst_file[MAX_LEN], obj_file[MAX_LEN];
+	char itm_file[] = "itm_file";
+	int len = strlen(asm_file);
 	int error, line_num = 0;
 
-	strcpy(lst_filename, filename);
-	lst_filename[len-3] = 'l', lst_filename[len-2] = 's', lst_filename[len-1] = 't';
-	strcpy(obj_filename, filename);
-	obj_filename[len-3] = 'o', obj_filename[len-2] = 'b', obj_filename[len-1] = 'j';
+	strcpy(lst_file, asm_file);
+	lst_file[len-3] = 'l', lst_file[len-2] = 's', lst_file[len-1] = 't';
+	strcpy(obj_file, asm_file);
+	obj_file[len-3] = 'o', obj_file[len-2] = 'b', obj_file[len-1] = 'j';
 
 	// init
+	strcpy(program_name, "MAIN");
 	assemble_start_flag = 0;
 	clear_sym_table();	
 	make_sym_table();
 
 	// pass 1
-	error = make_intermediate_file(filename, &line_num);
+	error = make_intermediate_file(asm_file, itm_file, str, &line_num);
 	if(error)
 	{
 		clear_sym_table();
-		if(is_in_dir("itm.dat")) remove("itm.dat");
-		print_assemble_error(error, line_num);
+		if(is_in_dir(itm_file)) remove(itm_file);
+		print_assemble_error(error, str, line_num);
 		return;
 	}
 	// pass 2

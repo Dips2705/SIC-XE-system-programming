@@ -7,6 +7,8 @@
 #include "opcode_table.h"
 #include "symbol_table.h"
 
+int is_register(char* str);
+
 void assemble_(char* filename);
 
 #endif

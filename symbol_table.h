@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "assembler.h"
 #define SYM_LEN 31
 
 typedef struct _sym_node
@@ -22,5 +23,7 @@ void add_symbol(int addr, char symbol[SYM_LEN]);
 int get_sym_hash(char key[SYM_LEN]);
 
 int get_addr(char key[SYM_LEN]);
+
+void symbol_();
 
 #endif

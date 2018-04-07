@@ -108,6 +108,7 @@ int run(int comm, int para1, int para2, int para3, int token_size, char token[MA
 			type_(token[1]);
 			break;
 		case _SYMBOL:
+			symbol_();
 			break;
 		default:
 			break;
@@ -303,16 +304,16 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 		if(tsz != 2) return 2;
 		if(p1 == -1) return 5;
 	}
-	else if(_comm == _TYPE)
-	{
-		if(tsz != 2) return 2;
-		if(!is_in_dir(token[1])) return 6;
-	}
 	else if(_comm == _ASSEMBLE)
 	{
 		if(tsz != 2) return 2;
 		if(!is_in_dir(token[1])) return 6;
 		if(strcmp(token[1] + strlen(token[1]) - 4, ".asm")) return 6;
+	}
+	else if(_comm == _TYPE)
+	{
+		if(tsz != 2) return 2;
+		if(!is_in_dir(token[1])) return 6;
 	}
 	else if(tsz > 1) return 2;
 	

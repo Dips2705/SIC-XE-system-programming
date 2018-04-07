@@ -1,8 +1,11 @@
 #include "symbol_table.h"
 #define SYM_LEN 31
+#define REG_NUM 9 
 #define TABLE_SIZE 100
+#define MAX_SYMBOL_SIZE 100001
 
 sym_node* sym_table[TABLE_SIZE];
+sym_node sym_arr[MAX_SYMBOL_SIZE];
 int sym_on = 0;
 
 void make_sym_table()
@@ -66,4 +69,39 @@ int get_addr(char key[SYM_LEN])
 	for(; it != NULL; it = it->next)
 		if(!strcmp(key, it->symbol)) return it->addr;
 	return -1;
+}
+
+void symbol_()
+{
+	int i, j, idx = 0;
+	if(!sym_on)
+	{
+		printf("\tSymbol Table is empty.\n");
+		return;
+	}
+	for(i = 0; i < TABLE_SIZE; i++)
+	{
+		sym_node* it;
+		for(it = sym_table[i]; it != NULL; it = it->next)
+			if(!is_register(it->symbol))
+			{
+				strcpy(sym_arr[idx].symbol, it->symbol);
+				sym_arr[idx++].addr = it->addr;
+			}
+	}
+	for(i = idx - 1; i > 0; i--)
+		for(j = 0; j < i; j++)
+			if(strcmp(sym_arr[j].symbol, sym_arr[j+1].symbol) > 0)
+			{
+				char tmp_s[SYM_LEN];
+				int tmp_a;
+
+				strcpy(tmp_s, sym_arr[j].symbol);
+				tmp_a = sym_arr[j].addr;	
+				strcpy(sym_arr[j].symbol, sym_arr[j+1].symbol);
+				sym_arr[j].addr = sym_arr[j+1].addr;
+				strcpy(sym_arr[j+1].symbol, tmp_s);
+				sym_arr[j+1].addr = tmp_a;
+			}
+	for(i = 0; i < idx; i++) printf("\t%s\t%05X\n", sym_arr[i].symbol, sym_arr[i].addr);
 }
