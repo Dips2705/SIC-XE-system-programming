@@ -123,6 +123,34 @@ int str_to_dec(char* str, int boundary)
 	return ret;
 }
 
+int upper_char_to_hexa(char c)
+{
+	int val = -1;
+	if('0' <= c && c <= '9') val = (int)(c - '0');
+	if('A' <= c && c <= 'F') val = (int)(c - 'A' + 10);
+	return val;
+}
+
+int str_to_hexa(char* str, int boundary)
+{	
+	int ret = 0;
+	int i, len = strlen(str), val;
+
+	for(i = 0; i < len; i++)
+	{
+		val = upper_char_to_hexa(str[i]);
+		if(val == -1) return -1;
+	}
+	for(i = 0; i < len; i++)
+	{
+		val = upper_char_to_hexa(str[i]);
+		ret *= 16;
+		ret += val;
+		if(ret >= boundary) return -2;
+	}
+	return ret;
+}
+
 int assem_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN], int* s, int* e)
 {
 	int i, j, len = strlen(str);
@@ -191,7 +219,8 @@ int calc_byte_operand(char* str)
 	if(str[0] == 'X')
 	{
 		for(i = 2; i < len-1; i++)
-			if(char_to_hexa(str[i]) == -1) return -1;
+			if(upper_char_to_hexa(str[i]) == -1) return -1;
+		
 		if((len - 3) % 2 == 1) return -1;
 		else ret = (len - 3) / 2;
 	}
@@ -267,7 +296,12 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 				
 				// error : duplicate symbol
 				if(is_in_symbol_table(symbol)) return error = 2;
-				else if(!strcmp(assem_token[1], "START")) strcpy(program_name, symbol);
+				else if(!strcmp(assem_token[1], "START"))
+				{
+					// error : invalid program name
+					if(strlen(symbol) > 6) return error = 7;
+					strcpy(program_name, symbol);
+				}
 				else add_symbol(loc_cnt, symbol);
 
 				// pull the tokens forward
@@ -313,7 +347,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 					
 					if(!strcmp(assem_token[0], "START"))
 					{
-						int addr = str_to_val(assem_token[1], MAX_ADDR);
+						int addr = str_to_hexa(assem_token[1], MAX_ADDR);
 						// error : invalid position of start
 						if(assemble_start_flag) return error = 1;
 						// error : invalid operand
@@ -328,7 +362,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 					else if(!strcmp(assem_token[0], "END"))
 					{
 						// error : invalid operand (not symbol or out of range)
-						if(str_to_val(assem_token[1], MAX_ADDR) < 0 && !is_valid_symbol(assem_token[1]))
+						if(str_to_hexa(assem_token[1], MAX_ADDR) < 0 && !is_valid_symbol(assem_token[1]))
 							return error = 1;
 
 						strcpy(op, "END");
@@ -340,7 +374,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 					else if(!strcmp(assem_token[0], "BASE"))
 					{
 						// error : invalid operand (not symbol or out of range)
-						if(str_to_val(assem_token[1], MAX_ADDR) < 0 && !is_valid_symbol(assem_token[1]))
+						if(str_to_hexa(assem_token[1], MAX_ADDR) < 0 && !is_valid_symbol(assem_token[1]))
 							return error = 1;
 
 						strcpy(op, "BASE");
@@ -539,7 +573,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 	char symbol[SYM_LEN], op[SYM_LEN], p1[SYM_LEN], p2[SYM_LEN];
 	int base = -1;
 	
-	obj_idx += sprintf(obj_line+obj_idx, "H%s  ", program_name);
+	obj_idx += sprintf(obj_line+obj_idx, "H%-6s", program_name);
 	obj_idx += sprintf(obj_line+obj_idx, "%06X", first_addr);
 	obj_idx += sprintf(obj_line+obj_idx, "%06X", last_addr - first_addr);
 	
@@ -576,7 +610,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 					if(!is_in_symbol_table(p1)) return error = 5;
 					else start_addr = get_addr(p1);
 				}
-				else start_addr = str_to_val(p1, MAX_ADDR);
+				else start_addr = str_to_hexa(p1, MAX_ADDR);
 				no_loc = 1;
 			}
 			else if(!strcmp(op, "BASE"))
@@ -587,7 +621,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 					if(!is_in_symbol_table(p1)) return error = 5;
 					else base = get_addr(p1);
 				}
-				else base = str_to_val(p1, MAX_ADDR);
+				else base = str_to_hexa(p1, MAX_ADDR);
 				no_loc = 1;
 			}
 			else if(!strcmp(op, "NOBASE")) base = -1, no_loc = 1;
@@ -752,6 +786,8 @@ void print_assemble_error(int error, char* str, int n)
 		case 5: printf("\tAssembler Error: Undefined Symbol.\n");
 				printf("\t==> [line:%d] %s", n, str); break;
 		case 6: printf("\tAssembler Error: Need using Format 4. (+operator)\n");
+				printf("\t==> [line:%d] %s", n, str); break;
+		case 7: printf("\tAssembler Error: Invalid Program Name.\n");
 				printf("\t==> [line:%d] %s", n, str); break;
 		default: break;
 	}

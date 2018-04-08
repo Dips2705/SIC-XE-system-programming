@@ -27,6 +27,10 @@ int is_valid_constant(char* str);
 
 int str_to_dec(char* str, int boundary);
 
+int upper_char_to_hexa(char c);
+
+int str_to_hexa(char* str, int boundary);
+
 int assem_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN], int* s, int* e);
 
 int comment_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN]);

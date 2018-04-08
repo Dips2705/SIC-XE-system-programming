@@ -103,5 +103,12 @@ void symbol_()
 				strcpy(sym_arr[j+1].symbol, tmp_s);
 				sym_arr[j+1].addr = tmp_a;
 			}
-	for(i = 0; i < idx; i++) printf("\t%s\t%05X\n", sym_arr[i].symbol, sym_arr[i].addr);
+	for(i = 0; i < idx; i++)
+	{
+		printf("%c[1;34m", 27);
+		printf("\t%s", sym_arr[i].symbol);
+		printf("%c[1;32m", 27);
+		printf("\t%05X\n", sym_arr[i].addr);
+		printf("%c[0m", 27);
+	}
 }
