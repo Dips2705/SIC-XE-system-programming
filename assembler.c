@@ -220,9 +220,7 @@ int calc_byte_operand(char* str)
 	{
 		for(i = 2; i < len-1; i++)
 			if(upper_char_to_hexa(str[i]) == -1) return -1;
-		
-		if((len - 3) % 2 == 1) return -1;
-		else ret = (len - 3) / 2;
+		else ret = (len - 2) / 2;
 	}
 	else if(str[0] == 'C') ret = len - 3;
 	else return -1;
@@ -340,6 +338,23 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 					strcpy(p1, ".");
 					strcpy(p2, ".");
 				}
+				else if(!strcmp(assem_token[0], "END"))
+				{
+					if(tsz == 1) strcpy(assem_token[1], ".");
+					else if(tsz == 2)
+					{
+						// error : invalid operand (not symbol or out of range)
+						if(str_to_hexa(assem_token[1], MAX_ADDR) < 0 && !is_valid_symbol(assem_token[1]))
+							return error = 1;
+					}
+					else return error = 1;
+					
+					strcpy(op, "END");
+					strcpy(p1, assem_token[1]);
+					last_addr = loc_cnt;
+					loc_inc = loc_cnt;
+					loc_cnt = 0;
+				}
 				else
 				{	
 					// error : invalid # of operand
@@ -358,18 +373,6 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 						first_addr = addr;
 						loc_cnt = addr;
 						loc_inc = 0;
-					}
-					else if(!strcmp(assem_token[0], "END"))
-					{
-						// error : invalid operand (not symbol or out of range)
-						if(str_to_hexa(assem_token[1], MAX_ADDR) < 0 && !is_valid_symbol(assem_token[1]))
-							return error = 1;
-
-						strcpy(op, "END");
-						strcpy(p1, assem_token[1]);
-						last_addr = loc_cnt;
-						loc_inc = loc_cnt;
-						loc_cnt = 0;
 					}
 					else if(!strcmp(assem_token[0], "BASE"))
 					{
@@ -553,7 +556,9 @@ void byte_to_hexa(char* str, char* target)
 	}
 	else
 	{
-		for(i = 2; i < len-1; i++) target[i-2] = str[i];
+		int j = 2;
+		if((len - 3) % 2 == 1) target[0] = '0', j = 1;
+		for(i = 2; i < len-1; i++) target[i-j] = str[i];
 		target[len-1] = '\0';
 	}
 }
@@ -604,7 +609,8 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 		{
 			if(!strcmp(op, "END"))
 			{
-				if(is_valid_symbol(p1))
+				if(!strcmp(p1, ".")) start_addr = 0;
+				else if(is_valid_symbol(p1))
 				{
 					// error : undefined symbol
 					if(!is_in_symbol_table(p1)) return error = 5;
@@ -664,10 +670,10 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 				int ta = 0;
 				int xbpe = 0;
 				int pc = loc + 3;
-				int constant = 0;
+				int is_sym = 0;
 
-				if(is_valid_symbol(p1)) ta = get_addr(p1);
-				else ta = str_to_dec(p1, MAX_ADDR), constant = 1;
+				if(is_valid_symbol(p1)) ta = get_addr(p1), is_sym = 1;
+				else ta = str_to_dec(p1, 0x100000);
 				
 				// error : undefined symbol
 				if(ta == -1) return error = 5;
@@ -681,7 +687,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 			
 				if(!e) // format 3
 				{
-					if(!constant)
+					if(is_sym)
 					{
 						if(pc-2048 <= ta && ta <= pc+2047)
 						{
@@ -700,7 +706,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 				}
 				else // format 4
 				{
-					if(!constant) modi[midx++] = loc + 1;
+					if(is_sym) modi[midx++] = loc + 1;
 					sprintf(obj_code+obj_idx2, "%1X%05X", xbpe, ta);
 				}
 
