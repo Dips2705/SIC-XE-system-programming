@@ -41,7 +41,7 @@ int calc_byte_operand(char* str);
 
 int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_num);
 
-void byte_to_hexa(char* str, char* target);
+void byte_operand_to_hexa_code(char* str, char* target);
 
 int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_file, char* str, int* line_num);
 

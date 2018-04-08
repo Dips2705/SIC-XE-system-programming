@@ -138,6 +138,9 @@ void history_()
 	}
 }
 
+//요약: file의 내용을 출력하는 함수 
+//기능: filename을 입력으로 받아, file의 내용을 출력한다.
+//반환: 없음.
 void type_(char filename[MAX_LEN])
 {
 	FILE* fp = fopen(filename, "r");

@@ -91,6 +91,12 @@ int get_opcode(char key[MAX_LEN])
 	return -1;
 }
 
+//요약: key에 해당하는 format을 반환하는 함수 
+//기능: key를 hashing하여 얻은 값을 기반으로
+//		hash table을 탐색하여 format 값을 얻어 반환한다.
+//		만약, key와 일치하는 노드가 존재하지 않을 경우
+//		오류로 체크한다.
+//반환: -1 = 오류 / else  = key에 해당하는 format
 int get_format(char key[MAX_LEN])
 {
 	int idx = get_hash(key);

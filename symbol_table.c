@@ -4,10 +4,17 @@
 #define TABLE_SIZE 100
 #define MAX_SYMBOL_SIZE 100001
 
+// symbol table의 헤더
 sym_node* sym_table[TABLE_SIZE];
+// symbol table 출력용 배열
 sym_node sym_arr[MAX_SYMBOL_SIZE];
+// stmbol table on/off
 int sym_on = 0;
 
+//요약: symbol table을 생성하는 함수
+//기능: symbol table의 헤더를 초기화하고
+//		레지스터 이름을 symbol로 추가한다.
+//반환: 없음.
 void make_sym_table()
 {
 	int i;
@@ -25,6 +32,11 @@ void make_sym_table()
 	sym_on = 1;
 }
 
+//요약: symbol table을 초기화하는 함수 
+//기능: symbol table의 노드에 차례대로
+//		접근하여 symbol table에 사용 된
+//		메모리를 해제한다.
+//반환: 없음.
 void clear_sym_table()
 {
 	int i;
@@ -42,6 +54,11 @@ void clear_sym_table()
 	sym_on = 0;
 }
 
+//요약: symbol을 추가하는 함수 
+//기능: symbol 문자열과 그에 해당하는 주소값을
+//		입력받아서 symbol을 hashing하여 해당하는
+//		헤더에 추가한다.
+//반환: 없음.
 void add_symbol(int addr, char symbol[SYM_LEN])
 {
 	int idx = get_sym_hash(symbol);
@@ -53,6 +70,10 @@ void add_symbol(int addr, char symbol[SYM_LEN])
 	sym_table[idx] = n_node;
 }
 
+//요약: symbol table의 hashing 함수 
+//기능: key값을 입력받아서 hashing하고
+//		그 값을 반환한다.
+//반환: hashing value
 int get_sym_hash(char key[SYM_LEN])
 {
 	long long number = 0;
@@ -61,6 +82,11 @@ int get_sym_hash(char key[SYM_LEN])
 	return (int)(number % TABLE_SIZE);
 }
 
+//요약: symbol에 해당하는 주소값을 반환하는 함수
+//기능: key를 입력받아 hashing하고
+//		key에 해당하는 주소값을 반한한다.
+//		해당하는 symbol이 없다면 -1을 반환한다.
+//반환: sybmol에 해당하는 주소값 / error = -1
 int get_addr(char key[SYM_LEN])
 {
 	int idx = get_sym_hash(key);
@@ -71,6 +97,10 @@ int get_addr(char key[SYM_LEN])
 	return -1;
 }
 
+//요약: symbol들을 모두 출력하는 함수
+//기능: symbol을 내림차순으로 정렬하여
+//		차례대로 출력한다.
+//반환: 없음.
 void symbol_()
 {
 	int i, j, idx = 0;

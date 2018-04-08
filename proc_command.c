@@ -208,6 +208,10 @@ int str_to_val(char* str, int boundary)
 	return ret;
 }
 
+//요약: file이 현재 디렉토리에 있는지 확인하는 함수
+//기능: filename을 입력받아서 해당 파일이
+//		현재 디렉토리에 존재하는지 확인하고 0/1을 반환한다.
+//반환: 있음 = 1 / 없음 = 0
 int is_in_dir(char filename[MAX_LEN])
 {
 	int i, ret = 0;
