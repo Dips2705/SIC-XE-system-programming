@@ -747,7 +747,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 		if(!strcmp(symbol, ".")) strcpy(symbol, " ");
 		if(!strcmp(p1, ".")) strcpy(p1, " ");
 		if(no_loc) fprintf(wp_lst, "%4d\t     \t%s\t%s\t%-30s\t\t%s\n", *line_num, symbol, op, p1, obj_code);
-		else fprintf(wp_lst, "%4d\t%05X\t%s\t%s\t%-30s\t\t%s\n", *line_num, loc, symbol, op, p1, obj_code);
+		else fprintf(wp_lst, "%4d\t%04X\t%s\t%s\t%-30s\t\t%s\n", *line_num, loc, symbol, op, p1, obj_code);
 	}
 	// write last line of object file
 	int len = strlen(obj_line);
