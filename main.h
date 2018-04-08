@@ -5,5 +5,7 @@
 #include <string.h>
 #include "proc_command.h"
 #include "base.h"
+#include "opcode_table.h"
+#include "symbol_table.h"
 
 #endif

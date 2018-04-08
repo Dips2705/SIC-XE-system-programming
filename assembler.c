@@ -1,7 +1,7 @@
 #include "assembler.h"
 #define MAX_LEN 1001
 #define MAX_TOKEN 1001
-#define MAX_CODE_LINE 10001
+#define MAX_MODI 10001
 #define MAX_ADDR 0x100000
 #define MAX_WORD 0x1000000
 #define SYM_LEN 31
@@ -12,6 +12,7 @@
 #define COMMENT_ 3
 
 char program_name[SYM_LEN];
+int first_addr, last_addr, start_addr;
 char assem_token[MAX_TOKEN][MAX_LEN];
 int assemble_start_flag;
 
@@ -39,6 +40,14 @@ char* register_list[REG_NUM] =
 	"T",
 	"F"
 };
+
+int is_empty_line(char* str)
+{
+	int i, len = strlen(str);
+	for(i = 0; i < len; i++)
+		if(str[i] != ' ' && str[i] != '\t' && str[i] != '\n') return 0;
+	return 1;
+}
 
 int is_comment(char* str)
 {
@@ -201,14 +210,14 @@ int calc_byte_operand(char* str)
 // type 3 : comment
 int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_num)
 {
+	int error = 0;
 	FILE* rp = fopen(asm_file, "r");	
 	FILE* wp = fopen(itm_file, "w");
 	int loc_cnt = 0;
-
+	
 	while(fgets(str, MAX_LEN, rp) != NULL)
 	{
 		int idx;
-		int error = 0;
 		int blank_s[5] = {0};
 	    int	blank_e[5] = {0};
 		int tsz = 0, loc_inc = 0;
@@ -219,7 +228,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 
 		tsz = assem_tokenize(str, assem_token, blank_s, blank_e);
 
-		if(!tsz) continue; // blank line
+		if(!tsz) continue; // empty line
 		else *line_num += 5;
 
 		// error : program exceeds memory size
@@ -312,6 +321,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 							
 					   	strcpy(op, "START");
 						strcpy(p1, assem_token[1]);
+						first_addr = addr;
 						loc_cnt = addr;
 						loc_inc = 0;
 					}
@@ -323,6 +333,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 
 						strcpy(op, "END");
 						strcpy(p1, assem_token[1]);
+						last_addr = loc_cnt;
 						loc_inc = loc_cnt;
 						loc_cnt = 0;
 					}
@@ -392,7 +403,10 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 				// rsub (format 3)
 				if(!strcmp(assem_token[0], "RSUB"))
 				{
+					// error : invalid operand
 					if(tsz != 1 || e == 1) return error = 1;
+					strcpy(p1, ".");
+					strcpy(p2, ".");
 					n = 0, i = 0, x = 0;
 					loc_inc = 3;
 				}
@@ -400,6 +414,8 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 				{
 					// error : invalid operand
 					if(tsz != 1 || e == 1) return error = 1;
+					strcpy(p1, ".");
+					strcpy(p2, ".");
 					n = 0, i = 0, x = 0;
 					loc_inc = 1;
 				}
@@ -479,7 +495,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			type = COMMENT_;
 			tsz = comment_tokenize(str, assem_token);
 
-			fprintf(wp, "%d %d %d %d %d\t%05X\t", type, n, i, x, e, 0x00000);		
+			fprintf(wp, "%d %d %d %d %d\t%05X\t", type, n, i, x, e, 0);		
 			fprintf(wp, "%s\t", assem_token[0]);
 			for(idx = 1; idx < tsz; idx++)
 				fprintf(wp, "%s ", assem_token[idx]);
@@ -489,7 +505,236 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 
 	fclose(rp);
 	fclose(wp);
-	return 0;
+	return error = 0;
+}
+
+void byte_to_hexa(char* str, char* target)
+{
+	int i, len = strlen(str);
+	if(str[0] == 'C')
+	{
+		int j = 0;
+		for(i = 2; i < len-1; i++)
+			j += sprintf(target+j, "%02X", (int)(str[i]));
+	}
+	else
+	{
+		for(i = 2; i < len-1; i++) target[i-2] = str[i];
+		target[len-1] = '\0';
+	}
+}
+
+int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_file, char* str, int* line_num)
+{
+	int error = 0;
+	FILE* rp_itm = fopen(itm_file, "r");
+	FILE* rp_asm = fopen(asm_file, "r");
+	FILE* wp_obj = fopen(obj_file, "w");
+	FILE* wp_lst = fopen(lst_file, "w");
+
+	int modi[MAX_MODI], midx = 0, idx;
+	char obj_line[MAX_LEN] = {0};
+	int obj_idx = 0;
+	int type, n, i, x, e, loc;
+	char symbol[SYM_LEN], op[SYM_LEN], p1[SYM_LEN], p2[SYM_LEN];
+	int base = -1;
+	
+	obj_idx += sprintf(obj_line+obj_idx, "H%s  ", program_name);
+	obj_idx += sprintf(obj_line+obj_idx, "%06X", first_addr);
+	obj_idx += sprintf(obj_line+obj_idx, "%06X", last_addr - first_addr);
+	
+	fprintf(wp_obj, "%s\n", obj_line);
+	memset(obj_line, 0, sizeof(obj_line));
+	obj_idx = 0;
+
+	while(fscanf(rp_itm, "%d %d %d %d %d %X", &type, &n, &i, &x, &e, &loc) != EOF)
+	{
+		char obj_code[MAX_LEN] = {0};
+		int obj_idx2 = 0;
+		int no_loc = 0;
+
+		*line_num += 5;
+		// save error string
+		fgets(str, MAX_LEN, rp_asm);
+		while(is_empty_line(str)) fgets(str, MAX_LEN, rp_asm);
+
+		if(type == COMMENT_)
+		{
+			fscanf(rp_itm, "%[^\n]", obj_code);
+			fprintf(wp_lst, "%4d\t%s\n", *line_num, obj_code);
+			continue;
+		}
+		
+		fscanf(rp_itm, "%s %s %s %s", symbol, op, p1, p2);	
+		if(type == DIRECTIVE_)
+		{
+			if(!strcmp(op, "END"))
+			{
+				if(is_valid_symbol(p1))
+				{
+					// error : undefined symbol
+					if(!is_in_symbol_table(p1)) return error = 5;
+					else start_addr = get_addr(p1);
+				}
+				else start_addr = str_to_val(p1, MAX_ADDR);
+				no_loc = 1;
+			}
+			else if(!strcmp(op, "BASE"))
+			{
+				if(is_valid_symbol(p1))
+				{
+					// error : undefined symbol
+					if(!is_in_symbol_table(p1)) return error = 5;
+					else base = get_addr(p1);
+				}
+				else base = str_to_val(p1, MAX_ADDR);
+				no_loc = 1;
+			}
+			else if(!strcmp(op, "NOBASE")) base = -1, no_loc = 1;
+			else if(!strcmp(op, "BYTE")) byte_to_hexa(p1, obj_code);
+			else if(!strcmp(op, "WORD")) sprintf(obj_code, "%06X", str_to_dec(p1, MAX_WORD));
+			else if(!strcmp(op, "RESB") || !strcmp(op, "RESW"))
+			{
+				int len = strlen(obj_line);
+				if(len)
+				{
+					char tmp[5];
+					sprintf(tmp, "%02X", (len-9)/2);
+					obj_line[7] = tmp[0], obj_line[8] = tmp[1];
+					fprintf(wp_obj, "%s\n", obj_line);
+					memset(obj_line, 0, sizeof(obj_line));
+					obj_idx = 0;
+				}
+			}
+		}
+		else if(type == OPERATOR_)
+		{
+			int opcode = get_opcode(op);
+			int format = get_format(op);
+
+			if(!strcmp(op, "RSUB")) sprintf(obj_code, "4F0000");
+			else if(format == 1) sprintf(obj_code, "%02X", opcode);
+			else if(format == 2)
+			{
+				obj_idx2 += sprintf(obj_code+obj_idx2, "%02X", opcode);
+				obj_idx2 += sprintf(obj_code+obj_idx2, "%1X", get_addr(p1));
+				obj_idx2 += sprintf(obj_code+obj_idx2, "%1X", get_addr(p2));
+				if(strcmp(op, "CLEAR") && strcmp(op, "TIXR"))
+				{
+					strcat(p1, ",");
+					strcat(p1, p2);
+				}
+			}
+			else // format 3
+			{
+				int ta = 0;
+				int xbpe = 0;
+				int pc = loc + 3;
+				int constant = 0;
+
+				if(is_valid_symbol(p1)) ta = get_addr(p1);
+				else ta = str_to_dec(p1, MAX_ADDR), constant = 1;
+				
+				// error : undefined symbol
+				if(ta == -1) return error = 5;
+
+				if(n) opcode += 2;
+				if(i) opcode += 1;
+				if(x) xbpe += 8;
+				if(e) xbpe += 1;
+				
+				obj_idx2 += sprintf(obj_code+obj_idx2, "%02X", opcode);
+			
+				if(!e) // format 3
+				{
+					if(!constant)
+					{
+						if(pc-2048 <= ta && ta <= pc+2047)
+						{
+							ta -= pc;
+							if(ta < 0) ta &= 0x00000FFF;
+							xbpe += 2;
+						}
+						else if(base != -1 && base <= ta && ta <= base+4095)
+						{
+							ta -= base;
+							xbpe += 4;
+						}
+						else return error = 6; // error : not use format 4
+					}
+					sprintf(obj_code+obj_idx2, "%1X%03X", xbpe, ta);
+				}
+				else // format 4
+				{
+					if(!constant) modi[midx++] = loc + 1;
+					sprintf(obj_code+obj_idx2, "%1X%05X", xbpe, ta);
+				}
+
+				if(n == 1 && i == 0)
+				{
+					char* tmp = strdup(p1);
+					strcpy(p1, "@");
+					strcat(p1, tmp);
+				}
+				if(n == 0 && i == 1)
+				{
+					char* tmp = strdup(p1);
+					strcpy(p1, "#");
+					strcat(p1, tmp);
+				}
+				if(e)
+				{
+					char* tmp = strdup(op);
+					strcpy(op, "+");
+					strcat(op, tmp);
+				}
+				if(x) strcat(p1, ",X");
+			}
+		} 
+		
+		// write object file
+		if(strlen(obj_code))
+		{
+			int len = strlen(obj_line);
+			int record_len = len + strlen(obj_code);
+			if(record_len > 69)
+			{
+				char tmp[5];
+				sprintf(tmp, "%02X", (len-9)/2);
+				obj_line[7] = tmp[0], obj_line[8] = tmp[1];
+				fprintf(wp_obj, "%s\n", obj_line);
+				memset(obj_line, 0, sizeof(obj_line));
+				obj_idx = 0;
+			}
+			if(obj_idx == 0) obj_idx += sprintf(obj_line+obj_idx, "T%06X00", loc);
+			obj_idx += sprintf(obj_line+obj_idx, "%s", obj_code);
+		}
+		// write list file
+		if(!strcmp(symbol, ".")) strcpy(symbol, " ");
+		if(!strcmp(p1, ".")) strcpy(p1, " ");
+		if(no_loc) fprintf(wp_lst, "%4d\t     \t%s\t%s\t%-30s\t\t%s\n", *line_num, symbol, op, p1, obj_code);
+		else fprintf(wp_lst, "%4d\t%05X\t%s\t%s\t%-30s\t\t%s\n", *line_num, loc, symbol, op, p1, obj_code);
+	}
+	// write last line of object file
+	int len = strlen(obj_line);
+	if(len)
+	{	
+		char tmp[5];
+		sprintf(tmp, "%02X", (len-9)/2);
+		obj_line[7] = tmp[0], obj_line[8] = tmp[1];
+		fprintf(wp_obj, "%s\n", obj_line);
+		memset(obj_line, 0, sizeof(obj_line));
+		obj_idx = 0;
+	}
+	for(idx = 0; idx < midx; idx++)
+		fprintf(wp_obj, "M%06X05\n", modi[idx]);
+	fprintf(wp_obj, "E%06X\n", start_addr);
+
+	fclose(rp_itm);
+	fclose(rp_asm);
+	fclose(wp_obj);
+	fclose(wp_lst);
+	return error = 0;
 }
 
 void print_assemble_error(int error, char* str, int n)
@@ -504,6 +749,10 @@ void print_assemble_error(int error, char* str, int n)
 				printf("\t==> [line:%d] %s", n, str); break;
 		case 4: printf("\tAssembler Error: This program exceeds SIC/XE memory size.\n");
 				printf("\t==> [line:%d] %s", n, str); break;
+		case 5: printf("\tAssembler Error: Undefined Symbol.\n");
+				printf("\t==> [line:%d] %s", n, str); break;
+		case 6: printf("\tAssembler Error: Need using Format 4. (+operator)\n");
+				printf("\t==> [line:%d] %s", n, str); break;
 		default: break;
 	}
 }
@@ -514,7 +763,7 @@ void assemble_(char* asm_file)
 	char lst_file[MAX_LEN], obj_file[MAX_LEN];
 	char itm_file[] = "itm_file";
 	int len = strlen(asm_file);
-	int error, line_num = 0;
+	int error, line_num;
 
 	strcpy(lst_file, asm_file);
 	lst_file[len-3] = 'l', lst_file[len-2] = 's', lst_file[len-1] = 't';
@@ -523,9 +772,11 @@ void assemble_(char* asm_file)
 
 	// init
 	strcpy(program_name, "MAIN");
+	first_addr = 0, last_addr = 0, start_addr = 0;
 	assemble_start_flag = 0;
 	clear_sym_table();	
 	make_sym_table();
+	line_num = 0;
 
 	// pass 1
 	error = make_intermediate_file(asm_file, itm_file, str, &line_num);
@@ -536,5 +787,22 @@ void assemble_(char* asm_file)
 		print_assemble_error(error, str, line_num);
 		return;
 	}
+
 	// pass 2
+	line_num = 0;
+	error = make_object_file(itm_file, asm_file, obj_file, lst_file, str, &line_num);
+	if(error)
+	{
+		clear_sym_table();
+		if(is_in_dir(itm_file)) remove(itm_file);
+		if(is_in_dir(obj_file)) remove(obj_file);
+		if(is_in_dir(lst_file)) remove(lst_file);
+		print_assemble_error(error, str, line_num);
+		return;
+	}
+	else
+	{
+		if(is_in_dir(itm_file)) remove(itm_file);
+		printf("\toutput file : [%s], [%s]\n", lst_file, obj_file);
+	}
 }

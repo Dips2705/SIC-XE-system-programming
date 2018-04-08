@@ -62,5 +62,6 @@ int main()
 	// 사용한 동적할당 메모리 해제
 	clear_history();
 	clear_table();
+	clear_sym_table();
 	return 0;
 }
