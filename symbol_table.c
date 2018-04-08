@@ -91,7 +91,7 @@ void symbol_()
 	}
 	for(i = idx - 1; i > 0; i--)
 		for(j = 0; j < i; j++)
-			if(strcmp(sym_arr[j].symbol, sym_arr[j+1].symbol) > 0)
+			if(strcmp(sym_arr[j].symbol, sym_arr[j+1].symbol) < 0)
 			{
 				char tmp_s[SYM_LEN];
 				int tmp_a;

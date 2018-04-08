@@ -248,7 +248,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 	{
 		int idx;
 		int blank_s[5] = {0};
-	    int	blank_e[5] = {0};
+		int blank_e[5] = {0};
 		int tsz = 0, loc_inc = 0;
 		int is_di = 0, is_op = 0, is_co = 0;
 
