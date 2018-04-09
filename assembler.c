@@ -307,7 +307,6 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 		int blank_e[5] = {0};
 		int tsz = 0, loc_inc = 0;
 		int is_di = 0, is_op = 0, is_co = 0;
-
 		int type = 0, n = 0, i = 0, x = 0, e = 0;
 		char symbol[SYM_LEN], op[SYM_LEN], p1[SYM_LEN], p2[SYM_LEN];
 
@@ -316,9 +315,6 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 		if(!tsz) continue; // empty line
 		else *line_num += 5;
 
-		// error : program exceeds memory size
-		if(loc_cnt >= MAX_ADDR) return error = 4;
-		
 		// check if it is comment
 		if(is_comment(assem_token[0])) is_co = 1;
 		
@@ -334,7 +330,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			fprintf(wp, "\n");
 		}
 		else
-		{
+		{	
 			// error: token > 4 or symbol size > 30
 			if(tsz == -1) return error = 1;
 			for(idx = 0; idx < tsz; idx++)
@@ -605,7 +601,10 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 				type = OPERATOR_;
 			}
 			else return error = 3; // error : invalid operation code
-
+			
+			// error : program exceeds memory size
+			if(loc_cnt + loc_inc >= MAX_ADDR) return error = 4;
+			
 			fprintf(wp, "%d %d %d %d %d\t%05X\t%s\t%s\t%s\t%s\n", type, n, i, x, e, loc_cnt, symbol, op, p1, p2);
 			
 			assemble_start_flag = 1;
