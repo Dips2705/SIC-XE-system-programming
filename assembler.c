@@ -321,8 +321,19 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 		
 		// check if it is comment
 		if(is_comment(assem_token[0])) is_co = 1;
+		
+		if(is_co) // it is comment
+		{
+			type = COMMENT_;
+			tsz = comment_tokenize(str, assem_token);
 
-		if(!is_co)
+			fprintf(wp, "%d %d %d %d %d\t%05X\t", type, n, i, x, e, 0);		
+			fprintf(wp, "%s\t", assem_token[0]);
+			for(idx = 1; idx < tsz; idx++)
+				fprintf(wp, "%s ", assem_token[idx]);
+			fprintf(wp, "\n");
+		}
+		else
 		{
 			// error: token > 4 or symbol size > 30
 			if(tsz == -1) return error = 1;
@@ -599,17 +610,6 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			
 			assemble_start_flag = 1;
 			loc_cnt += loc_inc;
-		}
-		else // it is comment
-		{
-			type = COMMENT_;
-			tsz = comment_tokenize(str, assem_token);
-
-			fprintf(wp, "%d %d %d %d %d\t%05X\t", type, n, i, x, e, 0);		
-			fprintf(wp, "%s\t", assem_token[0]);
-			for(idx = 1; idx < tsz; idx++)
-				fprintf(wp, "%s ", assem_token[idx]);
-			fprintf(wp, "\n");
 		}
 	}
 
