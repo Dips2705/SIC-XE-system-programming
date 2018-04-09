@@ -215,7 +215,6 @@ int assem_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN], int* s, int* e)
 			y = 0, flag = 0;
 		}
 	}
-
 	if(s[z] != len-1)
 		for(i = s[z]; i < len; i++)
 			if(str[i] != ' ' && str[i] != '\t' && str[i] != '\n') return -1;
@@ -337,15 +336,22 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 
 			if(!is_di && !is_op) // it has symbol
 			{
+				int comma, jdx;
+				
 				// comma error check
-				if(tsz == 4)
+				for(jdx = 0; jdx < tsz-1; jdx++)
 				{
-					int comma = 0;
-					for(idx = blank_s[3]; idx < blank_e[3]; idx++)
+					comma = 0;
+					for(idx = blank_s[jdx]; idx < blank_e[jdx]; idx++)
 						if(str[idx] == ',') comma++;
-					// error : invalid # of comma
-					if(comma != 1) return error = 1;
-				}	
+					if(comma != 0) return error = 1;
+				}
+				comma = 0;
+				for(idx = blank_s[tsz-1]; idx < blank_e[tsz-1]; idx++)
+					if(str[idx] == ',') comma++;
+				// error : invalid # of comma
+				if(tsz == 4 && comma != 1) return error = 1;
+				else if(tsz != 4 && comma != 0) return error = 1;
 				
 				// error : invalid symbol format
 				if(!is_valid_symbol(assem_token[0])) return error = 1; 
@@ -369,15 +375,23 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			}
 			else // it has not symbol
 			{
+				int comma, jdx;
+				
 				// comma error check
-				if(tsz == 3)
+				for(jdx = 0; jdx < tsz-1; jdx++)
 				{
-					int comma = 0;
-					for(idx = blank_s[2]; idx < blank_e[2]; idx++)
+					comma = 0;
+					for(idx = blank_s[jdx]; idx < blank_e[jdx]; idx++)
 						if(str[idx] == ',') comma++;
-					// error : invalid # of comma
-					if(comma != 1) return error = 1;
+					if(comma != 0) return error = 1;
 				}
+				comma = 0;
+				for(idx = blank_s[tsz-1]; idx < blank_e[tsz-1]; idx++)
+					if(str[idx] == ',') comma++;
+				// error : invalid # of comma
+				if(tsz == 3 && comma != 1) return error = 1;
+				else if(tsz != 3 && comma != 0) return error = 1;
+				
 				strcpy(symbol, ".");
 			}
 
