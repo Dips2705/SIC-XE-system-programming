@@ -10,6 +10,9 @@
 #include "opcode_table.h"
 #include "symbol_table.h"
 #include "assembler.h"
+#include "linking_loader.h"
+#include "processor.h"
+#include "debugger.h"
 #define MAX_LEN 1001
 #define MAX_TOKEN 1001
 

@@ -3,7 +3,7 @@
 #define MAX_TOKEN 1001
 #define MAX_VAL 0x100
 #define MAX_ADDR 0x100000
-#define COMM_NUM 20
+#define COMM_NUM 24
 
 // 명령어 열거형
 // 0 ~ 19 까지의 정수가 mapping된다.
@@ -29,6 +29,10 @@ enum commands
 	_ASSEMBLE,
 	_TYPE,
 	_SYMBOL,
+	_PROGADDR,
+	_LOADER,
+	_RUN,
+	_BP
 };
 
 // 명령어 문자열 상수 배열
@@ -53,7 +57,11 @@ const char* command_list[COMM_NUM] =
 	"opcodelist",
 	"assemble",
 	"type",
-	"symbol"
+	"symbol",
+	"progaddr",
+	"loader",
+	"run",
+	"bp"
 };
 
 // 요약: 명령어 번호와 매개변수들을 받아서 실행하는 함수
@@ -109,6 +117,16 @@ int run(int comm, int para1, int para2, int para3, int token_size, char token[MA
 			break;
 		case _SYMBOL:
 			symbol_();
+			break;
+		case _PROGADDR:
+			progaddr_(para1);
+			break;
+		case _LOADER:
+			loader_(token_size, token);
+			break;
+		case _RUN:
+			break;
+		case _BP:
 			break;
 		default:
 			break;
@@ -259,8 +277,14 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 	// 오류 처리
 	if(!tsz) return 1565;
 	else if(_comm >= COMM_NUM || !strlen(token[0]) || tsz == -1) return 1;
+	else if(_comm == _LOADER)
+	{
+		int i;
+		tsz = comment_tokenize(str, token);
+		for(i = 1; i < tsz; i++)
+			if(!is_in_dir(token[i])) return 6;
+	}
 	else if(tsz == -2) return 2;
-	
 	else if(_comm == _DU || _comm == _DUMP)
 	{
 		if(tsz > 3) return 2;
@@ -318,6 +342,25 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 	{
 		if(tsz != 2) return 2;
 		if(!is_in_dir(token[1])) return 6;
+	}
+	else if(_comm == _PROGADDR)
+	{
+		p1 = str_to_val(token[1], MAX_ADDR);
+		if(tsz != 2) return 2;
+		if(p1 == -1) return 2;
+		if(p1 == -2) return 3;
+	}
+	else if(_comm == _BP)
+	{
+		if(tsz > 2) return 2;
+		if(tsz == 1) p1 = -1; // bp
+		else if(tsz == 2)
+		{
+			p1 = str_to_val(token[1], MAX_ADDR);
+			if(!strcmp(token[1], "clear")) p1 = -2; // bp clear
+			else if(p1 == -1) return 2;
+			else if(p1 == -2) return 3;
+		}
 	}
 	else if(tsz > 1) return 2;
 	
