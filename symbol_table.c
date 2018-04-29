@@ -1,5 +1,5 @@
 #include "symbol_table.h"
-#define SYM_LEN 31
+#define SYM_LEN 7
 #define REG_NUM 9 
 #define TABLE_SIZE 100
 #define MAX_SYMBOL_SIZE 100001

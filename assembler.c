@@ -4,7 +4,7 @@
 #define MAX_MODI 10001
 #define MAX_ADDR 0x100000
 #define MAX_WORD 0x1000000
-#define SYM_LEN 31
+#define SYM_LEN 7
 #define DIR_NUM 8
 #define REG_NUM 9
 #define DIRECTIVE_ 1

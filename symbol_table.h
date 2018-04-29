@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "assembler.h"
-#define SYM_LEN 31
+#define SYM_LEN 7
 
 typedef struct _sym_node
 {

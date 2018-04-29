@@ -71,6 +71,11 @@ void edit_(int addr, int val)
 	mem[addr] = val;	
 }
 
+int get_value(int addr)
+{
+	return mem[addr];
+}
+
 // 요약: 입력받은 주소값의 범위에 값을 저장하는 함수
 // 기능: 입력받은 주소값의 범위에 값을 할당한다.
 // 반환: 없음.

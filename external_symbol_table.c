@@ -85,7 +85,7 @@ void print_ext_table()
 				tmp_a = ext_arr[j].addr;
 				tmp_l = ext_arr[j].len;
 				strcpy(tmp_sec, ext_arr[j].section);
-				strcpu(tmp_sym, ext_arr[j].symbol);
+				strcpy(tmp_sym, ext_arr[j].symbol);
 				
 				ext_arr[j].addr = ext_arr[j+1].addr;
 				ext_arr[j].len = ext_arr[j+1].len;
@@ -98,18 +98,19 @@ void print_ext_table()
 				strcpy(ext_arr[j+1].symbol, tmp_sym);
 			}
 	// print
-	printf("control\tsymbol\taddress\tlength\n");
-	printf("section\tname\n");
-	printf("--------------------------------------\n");
+	printf("\tcontrol\t\tsymbol\t\taddress\t\tlength\n");
+	printf("\tsection\t\tname\n");
+	printf("\t--------------------------------------------------------------\n");
 	for(i = 0; i < idx; i++)
 	{
 		if(!strcmp(ext_arr[i].section, ext_arr[i].symbol))
 		{
 			total_len += ext_arr[i].len;
-			printf("%s\t%s\t%04X\t%04X\n",ext_arr[i].section, "      ", ext_arr[i].addr, ext_arr[i].len);
+			printf("\t%s\t\t%s\t\t%04X\t\t%04X\n", 
+					ext_arr[i].section, "      ", ext_arr[i].addr, ext_arr[i].len);
 		}
-		else printf("%s\t%s\t%04X\n", "      ", ext_arr[i].symbol, ext_arr[i].addr);
+		else printf("\t%s\t\t%s\t\t%04X\n", "      ", ext_arr[i].symbol, ext_arr[i].addr);
 	}
-	printf("--------------------------------------\n");
+	printf("\t--------------------------------------------------------------\n");
 	printf("\t\t\t\t\ttotal length\t%04X\n", total_len);
 }

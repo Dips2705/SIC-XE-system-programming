@@ -1,4 +1,4 @@
-sicsim.out : main.o proc_command.o base.o memory.o opcode_table.o symbol_table.o assembler.o external_symbol_table.o linkig_loader.o processor.o debugger.o
+sicsim.out : main.o proc_command.o base.o memory.o opcode_table.o symbol_table.o assembler.o external_symbol_table.o linking_loader.o processor.o debugger.o
 	gcc -W -o sicsim.out main.o proc_command.o base.o memory.o opcode_table.o symbol_table.o assembler.o external_symbol_table.o linking_loader.o processor.o debugger.o
 main.o : main.c main.h
 	gcc -W -c main.c

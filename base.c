@@ -26,6 +26,10 @@ void help_()
 	printf("\tassemble filename\n");
 	printf("\ttype filename\n");
 	printf("\tsymbol\n");
+	printf("\tprogaddr [address]\n");
+	printf("\tloader [object filename1] [object filename2] [...]\n");
+	printf("\trun\n");
+	printf("\tbp [address/clear]\n");
 }
 
 // 요약: 현재 디렉터리의 파일 리스트를 출력하는 함수

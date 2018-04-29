@@ -281,6 +281,7 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 	{
 		int i;
 		tsz = comment_tokenize(str, token);
+		if(tsz == 1) return 2;
 		for(i = 1; i < tsz; i++)
 			if(!is_in_dir(token[i])) return 6;
 	}
