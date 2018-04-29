@@ -335,7 +335,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			// error: token > 4 or symbol size > 30
 			if(tsz == -1) return error = 1;
 			for(idx = 0; idx < tsz; idx++)
-				if(strlen(assem_token[idx]) > SYM_LEN) return error = 1;
+				if(strlen(assem_token[idx]) > SYM_LEN - 1) return error = 1;
 
 			// check first word type
 			if(is_directive(assem_token[0])) is_di = 1;
