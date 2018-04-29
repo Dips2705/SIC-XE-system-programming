@@ -59,6 +59,7 @@ int update_ext_table(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 						add_ext_symbol(addr[i] + csaddr, 0, prog_name, symbol[i]);			
 					}
 			}
+			else if(str[0] == 'H') return 1;
 			else if(str[0] == 'E') break;
 		}
 		csaddr += prog_len;
@@ -80,7 +81,9 @@ int linking_load(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 		int ref[MAX_REF], ref_size = 0;
 
 		fgets(str, MAX_LEN, fp);
-		sscanf(str, "%1s%6s%6X%6X", tag, prog_name, &start_addr, &prog_len);
+		check = sscanf(str, "%1s%6s%6X%6X", tag, prog_name, &start_addr, &prog_len);
+		if(check == EOF) return 1;
+
 		ref[1] = get_ext_addr(prog_name);
 		if(ref[1] == -1) return 3;
 		else ref_size = 1;
@@ -195,4 +198,9 @@ void loader_(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 void progaddr_(int addr)
 {
 	program_start_addr = addr;
+}
+
+int get_start_addr()
+{
+	return program_start_addr;
 }

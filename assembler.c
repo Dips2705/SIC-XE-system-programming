@@ -16,6 +16,7 @@ int first_addr, last_addr, start_addr;
 char assem_token[MAX_TOKEN][MAX_LEN];
 // assemble 시작 여부를 체크
 int assemble_start_flag;
+int assemble_end_flag;
 
 char* directive_list[DIR_NUM] =
 {	
@@ -334,7 +335,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			// error: token > 4 or symbol size > 30
 			if(tsz == -1) return error = 1;
 			for(idx = 0; idx < tsz; idx++)
-				if(strlen(assem_token[idx]) > 30) return error = 1;
+				if(strlen(assem_token[idx]) > SYM_LEN) return error = 1;
 
 			// check first word type
 			if(is_directive(assem_token[0])) is_di = 1;
@@ -428,12 +429,15 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 							return error = 1;
 					}
 					else return error = 1;
-					
+					// error : invalid position of end
+					if(assemble_end_flag) return error = 1;
+
 					strcpy(op, "END");
 					strcpy(p1, assem_token[1]);
 					last_addr = loc_cnt;
 					loc_inc = loc_cnt;
 					loc_cnt = 0;
+					assemble_end_flag = 1;
 				}
 				else
 				{	
@@ -907,6 +911,7 @@ void assemble_(char* asm_file)
 	strcpy(program_name, "MAIN");
 	first_addr = 0, last_addr = 0, start_addr = 0;
 	assemble_start_flag = 0;
+	assemble_end_flag = 0;
 	clear_sym_table();	
 	make_sym_table();
 	line_num = 0;
