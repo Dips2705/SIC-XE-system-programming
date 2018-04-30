@@ -131,11 +131,11 @@ int linking_load(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 				{
 					int val;
 					val = char_to_hexa(line[i]);
-					val *= 16;
+					val = val << 4;
 					val += char_to_hexa(line[i+1]);
+					
 					if(line_addr >= MAX_ADDR) return 1;
-					val &= 0x000000ff;
-					edit_(line_addr, val);
+					edit_(line_addr, val & 0x000000ff);
 					line_addr++;
 				}
 			}
@@ -153,7 +153,7 @@ int linking_load(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 				modi_len = (modi_len + 1) / 2;
 				for(i = 0; i < modi_len; i++)
 				{
-					val *= 256;
+					val = val << 8;
 					val += get_value(modi_addr + i);
 				}
 
@@ -162,13 +162,9 @@ int linking_load(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 
 				for(i = modi_len-1; i >= 0; i--)
 				{
-					int modi_val = val % 256;
-
-					if(modi_addr + i >= MAX_ADDR) return 1;	
-					
-					modi_val &= 0x000000ff;
-					edit_(modi_addr + i, modi_val);
-					val /= 256;
+					if(modi_addr + i >= MAX_ADDR) return 1;		
+					edit_(modi_addr + i, val & 0x000000ff);
+					val = val >> 8;
 				}
 			}
 			else if(str[0] == 'E') break;	

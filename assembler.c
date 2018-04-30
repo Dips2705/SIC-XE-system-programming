@@ -14,7 +14,6 @@
 char program_name[SYM_LEN];
 int first_addr, last_addr, start_addr;
 char assem_token[MAX_TOKEN][MAX_LEN];
-// assemble 시작 여부를 체크
 int assemble_start_flag;
 int assemble_end_flag;
 
@@ -43,9 +42,6 @@ char* register_list[REG_NUM] =
 	"F"
 };
 
-//요약: 빈 라인인지 확인하는 함수
-//기능: string을 입력받아 빈라인인지 여부를 반환한다.
-//반환: 빈 라인 = 1 / 아님 = 0
 int is_empty_line(char* str)
 {
 	int i, len = strlen(str);
@@ -54,27 +50,18 @@ int is_empty_line(char* str)
 	return 1;
 }
 
-//요약: comment인지 확인하는 함수
-//기능: string을 입력받아 comment인지 확인한다.
-//반환: comment = 1 / 아님 = 0
 int is_comment(char* str)
 {
 	if(!strcmp(str, ".")) return 1;
 	else return 0;
 }
 
-//요약: operator인지 확인하는 함수
-//기능: string을 입력받아 operator인지 확인한다.
-//반환: operator = 1 / 아님 = 0
 int is_operator(char* str)
 {
 	if(get_opcode(str) != -1) return 1;
 	else return 0;
 }
 
-//요약: directive인지 확인하는 함수
-//기능: string을 입력받아 directive인지 확인한다.
-//반환: directive = 1 / 아님 = 0
 int is_directive(char* str)
 {
 	int i;
@@ -83,9 +70,6 @@ int is_directive(char* str)
 	return 0;
 }
 
-//요약: register인지 확인하는 함수
-//기능: string을 입력받아 register인지 확인한다.
-//반환: register = 1 / 아님 = 0
 int is_register(char* str)
 {
 	int i;
@@ -94,9 +78,6 @@ int is_register(char* str)
 	return 0;
 }
 
-//요약: 올바른 symbol format인지 확인하는 함수
-//기능: string을 입력받아 올바른 symbol format인지 확인한다.
-//반환: valid = 1 / invalid = 0
 int is_valid_symbol(char* str)
 {
 	int i, len = strlen(str);
@@ -113,19 +94,12 @@ int is_valid_symbol(char* str)
 	else return 1; 
 }
 
-//요약: symbol table에 존재하는지 확인하는 함수
-//기능: string을 입력받아, 해당 symbol이 symbol table에
-//		존재하는지 확인한다.
-//반환: 존재 = 1 / 아님 = 0
 int is_in_symbol_table(char* str)
 {
 	if(get_addr(str) != -1) return 1;
 	else return 0;
 }
 
-//요약: 올바른 constant format인지 확인하는 함수 
-//기능: string을 입력받아 올바른 constant format인지 확인한다.
-//반환: valid = 1 / invalid = 0
 int is_valid_constant(char* str)
 {
 	int i, len = strlen(str);
@@ -134,11 +108,6 @@ int is_valid_constant(char* str)
 	return 1;
 }
 
-//요약: string을 10진수로 변환하는 함수
-//기능: string을 입력받아서 10진수로 변환한다.
-//		올바르지 않는 문자나 해당 값이 boundary보다
-//		크거나 같으면 에러를 반환한다.
-//반환: 10진수 값 / error = -1
 int str_to_dec(char* str, int boundary)
 {
 	int i, len = strlen(str);
@@ -154,10 +123,6 @@ int str_to_dec(char* str, int boundary)
 	return ret;
 }
 
-//요약: charater을 입력받아 16진수값으로 변환하는 함수
-//기능: 해당하는 16진수 값으로 변환하여 반환한다.
-//		올바르지 않는 문자(소문자 포함)일 경우 에러를 출력한다.
-//반환: 16진수 값 / error = -1
 int upper_char_to_hexa(char c)
 {
 	int val = -1;
@@ -166,11 +131,6 @@ int upper_char_to_hexa(char c)
 	return val;
 }
 
-//요약: string을 입력받아 16진수값으로 변환하는 함수
-//기능: string을 16진수 값으로 변환하여 반환한다.
-//		올바르지 않는 문자이거나 해당 값이 범위를 초과할
-//		경우에 에러를 출력한다.
-//반환: 16진수 값 / error = -1
 int str_to_hexa(char* str, int boundary)
 {	
 	int ret = 0;
@@ -191,10 +151,6 @@ int str_to_hexa(char* str, int boundary)
 	return ret;
 }
 
-//요약: assembly code를 tokenize하는 함수
-//기능: assemblt code를 tokenize한다.
-//		s와 e에는 token들 사이의 시작과 끝 index가 저장된다.
-//반환: token의 개수 / error = -1
 int assem_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN], int* s, int* e)
 {
 	int i, j, len = strlen(str);
@@ -204,7 +160,7 @@ int assem_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN], int* s, int* e)
 	{
 		if(str[i] != ' ' && str[i] != ',' && str[i] != '\t' && str[i] != '\n')
 		{
-			// 토큰 5개 이상 오류
+			// token size >= 5
 			if(x >= 4) return -1;
 			if(!flag) e[z++] = i;
 			token[x][y++] = str[i], flag = 1;
@@ -222,9 +178,6 @@ int assem_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN], int* s, int* e)
 	return x;
 }
 
-//요약: comment를 tokenize하는 함수
-//기능: string을 입력받아 comment를 tokenize한다.
-//반환: token의 개수
 int comment_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN])
 {
 	int i, j, len = strlen(str);
@@ -246,9 +199,6 @@ int comment_tokenize(char* str, char token[MAX_TOKEN][MAX_LEN])
 	return x;
 }
 
-//요약: string의 제일 앞 문자를 pop하는 함수
-//기능: string을 입력받아 제일 앞 문자를 pop한다.
-//반환: 없음.
 void str_pop_front(char* str)
 {
 	int i, len = strlen(str);
@@ -256,12 +206,6 @@ void str_pop_front(char* str)
 	str[len-1] = '\0';
 }
 
-//요약: byte directive의 operand를 처리하는 함수
-//기능: string을 입력받아서 operand에 해당하는
-//		byte의 크기를 계산하여 반환한다.
-//반환: size of byte / error = -1
-// return size of byte
-// error : -1
 int calc_byte_operand(char* str)
 {
 	int i, len = strlen(str);
@@ -281,12 +225,6 @@ int calc_byte_operand(char* str)
 	return ret;
 }
 
-//요약: assembly file의 symbol들을 기반으로 symbol table을 만들고
-//		intermediate file을 생성하는 함수
-//기능: assembly file의 code를 분석하여 symbol을 저장하고
-//		object file, list file으로 변환하기 전 intermediate file을 생성한다.
-//		범위체크, 올바르지 않는 문법등 주요 예외사항을 체크한다.
-//반환: error num / no error = 0
 // pass 1
 // ----------------------intermediate format----------------------
 // type n i x e  Loc  Symbol[.]  Operator  Operand1[.]  Operand2[.] 
@@ -335,7 +273,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			// error: token > 4 or symbol size > 30
 			if(tsz == -1) return error = 1;
 			for(idx = 0; idx < tsz; idx++)
-				if(strlen(assem_token[idx]) > SYM_LEN - 1) return error = 1;
+				if(strlen(assem_token[idx]) > SYM_LEN) return error = 1;
 
 			// check first word type
 			if(is_directive(assem_token[0])) is_di = 1;
@@ -621,10 +559,6 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 	return error = 0;
 }
 
-//요약: byte operand를 hexa code로 변환하는 함수
-//기능: byte operand를 해석해서 hexa code로 변환하여
-//		target string에 저장한다.
-//반환: 없음.
 void byte_operand_to_hexa_code(char* str, char* target)
 {
 	int i, len = strlen(str);
@@ -643,12 +577,6 @@ void byte_operand_to_hexa_code(char* str, char* target)
 	}
 }
 
-//요약: object file, list file을 생성하는 함수
-//기능: intermediate file을 읽어서 symbol table을 기준으로
-//		object file과 list file을 생성한다.
-//		정의되지 않은 symbol을 사용하거나, extended를 명시하지 않은 경우
-//		에러를 출력한다.
-//반환: error num / no error = 0
 int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_file, char* str, int* line_num)
 {
 	int error = 0;
@@ -853,7 +781,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 		obj_idx = 0;
 	}
 	for(idx = 0; idx < midx; idx++)
-		fprintf(wp_obj, "M%06X05\n", modi[idx]);
+		fprintf(wp_obj, "M%06X05+01\n", modi[idx]);
 	fprintf(wp_obj, "E%06X\n", start_addr);
 
 	fclose(rp_itm);
@@ -863,10 +791,6 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 	return error = 0;
 }
 
-//요약: assemble error를 출력하는 함수 
-//기능: error의 번호를 받아서 해당하는
-//		error 사항을 출력한다.
-//반환: 없음.
 void print_assemble_error(int error, char* str, int n)
 {
 	switch(error)
@@ -889,11 +813,6 @@ void print_assemble_error(int error, char* str, int n)
 	}
 }
 
-//요약: assemble 명령어 함수
-//기능: filename을 입력받아서 assemble을 수행한다.
-//		에러가 발생할 경우, 생성했던 file들을 삭제하고
-//		에러 메세지를 출력한다.
-//반환: 없음.
 void assemble_(char* asm_file)
 {
 	char str[MAX_LEN];

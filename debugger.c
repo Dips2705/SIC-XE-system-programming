@@ -25,6 +25,13 @@ void print_bp_list()
 void set_bp(int addr)
 {
 	int i, j;
+
+	if(find_bp(addr))
+	{
+		printf("\tAlready in the breakpoint list.\n");
+		return;
+	}
+	
 	break_point[bp_size++] = addr;
 	
 	for(i = bp_size-1; i >= 0; i--)

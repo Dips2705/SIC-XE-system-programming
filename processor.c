@@ -26,9 +26,9 @@ int debug_flag = 0;
 
 void print_register(int addr)
 {
-	printf("\t\tA : %06X X : %06X\n", reg[_A], reg[_X]);
-	printf("\t\tL : %06X PC: %06X\n", reg[_L], reg[_PC]);
-	printf("\t\tB : %06X S : %06X\n", reg[_B], reg[_S]);
+	printf("\t\tA : %06X\tX : %06X\n", reg[_A], reg[_X]);
+	printf("\t\tL : %06X\tPC: %06X\n", reg[_L], reg[_PC]);
+	printf("\t\tB : %06X\tS : %06X\n", reg[_B], reg[_S]);
 	printf("\t\tT : %06X\n", reg[_T]);
 	if(addr == -1) printf("\tEnd Program\n");
 	else printf("\tStop at checkpoint[%04X]\n", addr);
@@ -238,10 +238,8 @@ int run_process()
 
 		opcode -= ni;	
 		format = get_format_by_opcode(opcode);
-		if(format == 1)
-		{
-			if(ni != 0) return 2;
-		}
+
+		if(format == 1 && ni != 0) return 2;
 		else if(format == 2)
 		{
 			int regs = get_value(reg[_PC]++); 

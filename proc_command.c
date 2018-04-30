@@ -5,8 +5,6 @@
 #define MAX_ADDR 0x100000
 #define COMM_NUM 24
 
-// 명령어 열거형
-// 0 ~ 19 까지의 정수가 mapping된다.
 enum commands
 {
 	_H,
@@ -35,7 +33,6 @@ enum commands
 	_BP
 };
 
-// 명령어 문자열 상수 배열
 const char* command_list[COMM_NUM] = 
 {
 	"h",
@@ -64,10 +61,6 @@ const char* command_list[COMM_NUM] =
 	"bp"
 };
 
-// 요약: 명령어 번호와 매개변수들을 받아서 실행하는 함수
-// 기능: 입력받은 명령어 번호에 따라 sitch문으로
-//       해당 명령에와 대응되는 함수를 호출한다.
-// 반환: 1 = exit program / 0 = go on
 int run(int comm, int para1, int para2, int para3, int token_size, char token[MAX_TOKEN][MAX_LEN])
 {
 	switch(comm)
@@ -136,24 +129,18 @@ int run(int comm, int para1, int para2, int para3, int token_size, char token[MA
 	return 0;
 }
 
-// 요약: 입력받은 문자열을 토큰화하는 함수
-// 기능: 문자열을 우선 space, comma, tab, enter 기준으로
-//       토큰화하고, 토큰의 개수가 5개 이상이거나
-//       토큰들 사이의 comma 개수가 비정상적이면 오류로 체크한다.
-// 반환: -1 = 명령어 오류 / -2 = 매개변수 오류 / x = 토큰 개수
 int tokenize(char* str, char token[MAX_TOKEN][MAX_LEN])
 {
 	int i, j, len = strlen(str);
 	int x = 0, y = 0, z = 0;
 	int flag = 0;
-	// 토큰 사이의 시작, 끝 인덱스 저장
 	int s[5] = {0}, e[5] = {0};
 	
 	for(i = 0; i < len; i++)
 	{
 		if(str[i] != ' ' && str[i] != ',' && str[i] != '\t' && str[i] != '\n')
 		{
-			// 토큰 5개 이상 오류
+			// token size >= 5
 			if(x >= 4) return -2;
 			if(!flag) e[z++] = i;
 			token[x][y++] = str[i], flag = 1;
@@ -167,12 +154,10 @@ int tokenize(char* str, char token[MAX_TOKEN][MAX_LEN])
 		}
 	}
 
-	// 마지막 구간 공백 이외의 문자, 매개변수 오류
 	if(s[z] != len-1)
 		for(i = s[z]; i < len; i++)
 			if(str[i] != ' ' && str[i] != '\t' && str[i] != '\n') return -2;
 	
-	// 토큰 사이 구간에 비정상적인 comma개수 오류
 	for(i = 0; i < z; i++)
 	{
 		int comma = 0;
@@ -185,9 +170,6 @@ int tokenize(char* str, char token[MAX_TOKEN][MAX_LEN])
 	return x;
 }
 
-// 요약: char 문자에 해당하는 16진수 값을 반환하는 함수
-// 기능: 입력받은 문자에 해당하는 16진수 값을 반환한다.
-// 반환: -1 = invalid한 문자 / val = 16진수 값 
 int char_to_hexa(char c)
 {
 	int val = -1;
@@ -197,17 +179,6 @@ int char_to_hexa(char c)
 	return val;
 }
 
-// return -1 : invalid
-// return -2 : out of range (0 ~ 2^8-1) / (0 ~ 2^20-1)
-// 요약: 문자열에 해당하는 16진수 값을 반환한다.
-// 기능: 문자열을 순서대로 접근하며, 해당 문자의
-// 		 16진수 값과 자릿수 값을 곱하여, 문자열 전체에
-// 		 해당하는 16진수 값을 반환한다.
-// 		 invalid한 문자가 포함되거나, 값의 범위를
-// 		 벗어나는 오류를 체크한다.
-// 반환: -1 = invalid한 문자 포함
-// 		 -2 = out of range (0 ~ 2^8-1) or (0 ~ 2^20-1)
-//		 ret = 16진수 값
 int str_to_val(char* str, int boundary)
 {	
 	int ret = 0;
@@ -228,16 +199,10 @@ int str_to_val(char* str, int boundary)
 	return ret;
 }
 
-//요약: file이 현재 디렉토리에 있는지 확인하는 함수
-//기능: filename을 입력받아서 해당 파일이
-//		현재 디렉토리에 존재하는지 확인하고 0/1을 반환한다.
-//반환: 있음 = 1 / 없음 = 0
 int is_in_dir(char filename[MAX_LEN])
 {
 	int i, ret = 0;
-	// 현재 디렉터리 포인터
 	DIR* dir = opendir(".");
-	// 파일 순차접근에 사용되는 포인터
 	struct dirent* p;
 	struct stat fs;
 	
@@ -257,26 +222,16 @@ int is_in_dir(char filename[MAX_LEN])
 	}
 }
 
-// return 0 : !error
-// return 1~4 : error
-// 요약: 입력받은 문자열을 다루기 쉬운형태로 가공하는 함수
-// 기능: 문자열을 토큰화하고, 매개변수들을 해당하는 16진수 값으로 변환한다.
-// 		 그 과정에서 invalid한 문자열, 명령어, 매개변수, 값의 범위등을 체크하고
-// 		 오류가 있을 경우 해당하는 오류번호를 반환한다.
-// 반환: 0 = 오류 없음 / 1~5 = 오류번호 / 1565 = 입력 없음.
 int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* token_size, char token[MAX_TOKEN][MAX_LEN])
 {
 	int _comm = -1, p1 = -1, p2 = -1, p3 = -1, tsz = 0;
 
-	// 토큰화 하고, 토큰의 개수를 tsz에 반환
 	tsz = tokenize(str, token);
 	
-	// 명령어 번호를 찾는 과정
 	for(_comm = 0; _comm < COMM_NUM; _comm++)
 		if(!strcmp(token[0], command_list[_comm])) break;
 	*comm = _comm;
 
-	// 오류 처리
 	if(!tsz) return 1565;
 	else if(_comm >= COMM_NUM || !strlen(token[0]) || tsz == -1) return 1;
 	else if(_comm == _LOADER)
@@ -367,14 +322,10 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 	}
 	else if(tsz > 1) return 2;
 	
-	// 오류가 없을 경우, 값을 갱신하고 0을 반환
 	*para1 = p1, *para2 = p2, *para3 = p3, *token_size = tsz;
 	return 0;
 }
 
-// 요약: 오류 메세지를 출력하는 함수
-// 기능: 오류 번호를 입력받아, 오류 메시지를 출력한다.
-// 반환: 없음.
 void print_error(int error)
 {
 	switch(error)
