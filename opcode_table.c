@@ -4,6 +4,7 @@
 
 // opcode hash table의 각 head 포인터
 hash_node* hash_table[TABLE_SIZE];
+hash_node op_arr[0xff];
 
 // 요약: opcode hash table을 초기화하고 생성하는 함수
 // 기능: opcode.txt를 파일입력으로 읽어들여서
@@ -19,7 +20,12 @@ void make_table()
 	
 	for(i = 0; i < TABLE_SIZE; i++) hash_table[i] = NULL;
 	while(fscanf(fp, "%X %s %d/%d", &opcode, mnemonic, &format, &tmp) != EOF)
+	{
 		add_table(opcode, mnemonic, format);
+		strcpy(op_arr[opcode].mnemonic, mnemonic);
+		op_arr[opcode].opcode = opcode;
+		op_arr[opcode].format = format;
+	}
 	fclose(fp);
 }
 
@@ -105,6 +111,11 @@ int get_format(char key[MAX_LEN])
 	for(; it != NULL; it = it->next)
 		if(!strcmp(key, it->mnemonic)) return it->format;
 	return -1;
+}
+
+int get_format_by_opcode(int opcode)
+{
+	return op_arr[opcode].format;
 }
 
 // 요약: opcode를 출력하는 함수

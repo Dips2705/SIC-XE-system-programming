@@ -28,6 +28,8 @@ int get_opcode(char key[MAX_LEN]);
 
 int get_format(char key[MAX_LEN]);
 
+int get_format_by_opcode(int opcode);
+
 void opcode_(int opcode);
 
 void opcode_list_();

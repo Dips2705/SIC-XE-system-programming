@@ -125,8 +125,10 @@ int run(int comm, int para1, int para2, int para3, int token_size, char token[MA
 			loader_(token_size, token);
 			break;
 		case _RUN:
+			run_();
 			break;
 		case _BP:
+			bp_(para1);
 			break;
 		default:
 			break;

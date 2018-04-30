@@ -6,6 +6,7 @@
 #define MAX_REF 100
 
 int program_start_addr = 0;
+int program_size = 0;
 
 void print_loader_error(int error)
 {
