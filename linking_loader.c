@@ -134,6 +134,7 @@ int linking_load(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 					val *= 16;
 					val += char_to_hexa(line[i+1]);
 					if(line_addr >= MAX_ADDR) return 1;
+					val &= 0x000000ff;
 					edit_(line_addr, val);
 					line_addr++;
 				}
@@ -161,8 +162,12 @@ int linking_load(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 
 				for(i = modi_len-1; i >= 0; i--)
 				{
-					if(modi_addr + i >= MAX_ADDR) return 1;
-					edit_(modi_addr + i, val % 256);
+					int modi_val = val % 256;
+
+					if(modi_addr + i >= MAX_ADDR) return 1;	
+					
+					modi_val &= 0x000000ff;
+					edit_(modi_addr + i, modi_val);
 					val /= 256;
 				}
 			}
@@ -177,6 +182,7 @@ void loader_(int tsz, char filename[MAX_TOKEN][MAX_LEN])
 {
 	int error;
 
+	init_process();
 	make_ext_table();
 	error = update_ext_table(tsz, filename);
 	if(error)

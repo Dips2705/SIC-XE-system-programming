@@ -7,6 +7,7 @@
 #include "external_symbol_table.h"
 #include "memory.h"
 #include "proc_command.h"
+#include "processor.h"
 #define MAX_LEN 1001
 #define MAX_TOKEN 1001
 

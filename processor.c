@@ -21,8 +21,8 @@ enum registers
 	_SW
 };
 
-int reg[10] = {0, 0, MAX_ADDR, 0};
-int debug_flag = 0, cur_debug = -1;
+int reg[10] = {0};
+int debug_flag = 0;
 
 void print_register(int addr)
 {
@@ -297,37 +297,31 @@ int run_process()
 			}
 		}
 
-		int cur_pc = reg[_PC] - 1;
-
-		for(i = format + e - 1; i > 0; i--)
-			if(find_bp(cur_pc - i) && ((cur_pc - i) > cur_debug || (cur_pc - i) < cur_debug - format - e))
-			{
-				cur_debug = cur_pc - i;
-				reg[_PC] -= (format + e);
-				return -1 * cur_debug;
-			}
-
+		int bp_check = reg[_PC];
+		
 		// execute
 		execute(opcode, r1, r2, ni, ta);
-		
-		if(reg[_PC] >= MAX_ADDR)
-		{
-			reg[_PC] = 0;
-			break;
-		}
 
-		if(find_bp(cur_pc) && cur_pc != cur_debug)
-		{
-			cur_debug = cur_pc;
-			return -1 * cur_debug;
-		}
+		// end program
+		if(!reg[_PC]) break;
+
+		// breakpoint check
+		if(find_bp(bp_check)) return -1 * bp_check;
 	}
+	if(reg[_PC] >= MAX_ADDR) reg[_PC] = 0;
 	return 0;
+}
+
+void init_process()
+{
+	int i;
+	
+	for(i = 0; i < 10; i++) reg[i] = 0;
+	debug_flag = 0;
 }
 
 void run_()
 {
-	int i;
 	int error;
 
 	error = run_process();
@@ -339,8 +333,5 @@ void run_()
 	else if(error == 0) print_register(-1); // end program
 	else print_runtime_error(error); // error
 
-	for(i = 0; i < 10; i++) reg[i] = 0;
-	reg[_L] = MAX_ADDR;
-	debug_flag = 0;
-	cur_debug = -1;
+	init_process();
 }
