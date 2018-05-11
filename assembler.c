@@ -247,7 +247,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 		int tsz = 0, loc_inc = 0;
 		int is_di = 0, is_op = 0, is_co = 0;
 		int type = 0, n = 0, i = 0, x = 0, e = 0;
-		char symbol[SYM_LEN], op[SYM_LEN], p1[SYM_LEN], p2[SYM_LEN];
+		char symbol[SYM_LEN], op[MAX_LEN], p1[MAX_LEN], p2[MAX_LEN];
 
 		tsz = assem_tokenize(str, assem_token, blank_s, blank_e);
 
@@ -270,11 +270,56 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 		}
 		else
 		{	
+			int is_byte = 0;
+			if(!strcmp(assem_token[0], "BYTE"))
+			{
+				char cstr[MAX_LEN];
+				int i, len = strlen(str), idx = 0;
+				int check = 0;
+				for(i = blank_e[1]; i < len - 1; i++) cstr[idx++] = str[i];
+				cstr[idx] = '\0';
+				len = strlen(cstr);
+				for(i = len - 1; i >= 0; i--)
+				{
+					if(cstr[i] == ' ') cstr[i] = '\0';
+					else break;
+				}
+				strcpy(assem_token[1], cstr);
+				tsz = 2;
+				is_byte = 1;
+			}
+			else if(!strcmp(assem_token[1], "BYTE"))
+			{
+				char cstr[MAX_LEN];
+				int i, len = strlen(str), idx = 0;
+				int check = 0;
+				for(i = blank_e[2]; i < len - 1; i++) cstr[idx++] = str[i];
+				cstr[idx] = '\0';
+				len = strlen(cstr);
+				for(i = len - 1; i >= 0; i--)
+				{
+					if(cstr[i] == ' ') cstr[i] = '\0';
+					else break;
+				}
+				strcpy(assem_token[2], cstr);
+				tsz = 3;
+				is_byte = 1;
+			}
 			// error: token > 4 or symbol size > 30
-			if(tsz == -1) return error = 1;
-			for(idx = 0; idx < tsz; idx++)
-				if(strlen(assem_token[idx]) > SYM_LEN) return error = 1;
-
+			else if(tsz == -1) return error = 1;
+			
+			if(!is_byte)
+			{
+				for(idx = 0; idx < tsz; idx++)
+					if(strlen(assem_token[idx]) > SYM_LEN) return error = 1;
+			}
+			else
+			{
+				for(idx = 0; idx < tsz - 1; idx++)
+					if(strlen(assem_token[idx]) > SYM_LEN) return error = 1;
+				if(strlen(assem_token[tsz-1]) > 33) return error = 1; 
+			}
+			
 			// check first word type
 			if(is_directive(assem_token[0])) is_di = 1;
 			else if(is_operator(assem_token[0])) is_op = 1;
@@ -284,20 +329,34 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			{
 				int comma, jdx;
 				
-				// comma error check
-				for(jdx = 0; jdx < tsz-1; jdx++)
+				if(!is_byte)
 				{
+					// comma error check
+					for(jdx = 0; jdx < tsz-1; jdx++)
+					{
+						comma = 0;
+						for(idx = blank_s[jdx]; idx < blank_e[jdx]; idx++)
+							if(str[idx] == ',') comma++;
+						if(comma != 0) return error = 1;
+					}
 					comma = 0;
-					for(idx = blank_s[jdx]; idx < blank_e[jdx]; idx++)
+					for(idx = blank_s[tsz-1]; idx < blank_e[tsz-1]; idx++)
 						if(str[idx] == ',') comma++;
-					if(comma != 0) return error = 1;
+					// error : invalid # of comma
+					if(tsz == 4 && comma != 1) return error = 1;
+					else if(tsz != 4 && comma != 0) return error = 1;
 				}
-				comma = 0;
-				for(idx = blank_s[tsz-1]; idx < blank_e[tsz-1]; idx++)
-					if(str[idx] == ',') comma++;
-				// error : invalid # of comma
-				if(tsz == 4 && comma != 1) return error = 1;
-				else if(tsz != 4 && comma != 0) return error = 1;
+				else
+				{
+					// comma error check
+					for(jdx = 0; jdx < tsz; jdx++)
+					{
+						comma = 0;
+						for(idx = blank_s[jdx]; idx < blank_e[jdx]; idx++)
+							if(str[idx] == ',') comma++;
+						if(comma != 0) return error = 1;
+					}
+				}
 				
 				// error : invalid symbol format
 				if(!is_valid_symbol(assem_token[0])) return error = 1; 
@@ -546,7 +605,7 @@ int make_intermediate_file(char* asm_file, char* itm_file, char* str, int* line_
 			
 			// error : program exceeds memory size
 			if(loc_cnt + loc_inc >= MAX_ADDR) return error = 4;
-			
+		
 			fprintf(wp, "%d %d %d %d %d\t%05X\t%s\t%s\t%s\t%s\n", type, n, i, x, e, loc_cnt, symbol, op, p1, p2);
 			
 			assemble_start_flag = 1;
@@ -589,7 +648,7 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 	char obj_line[MAX_LEN] = {0};
 	int obj_idx = 0;
 	int type, n, i, x, e, loc;
-	char symbol[SYM_LEN], op[SYM_LEN], p1[SYM_LEN], p2[SYM_LEN];
+	char symbol[SYM_LEN], op[MAX_LEN], p1[MAX_LEN], p2[MAX_LEN];
 	int base = -1;
 	
 	obj_idx += sprintf(obj_line+obj_idx, "H%-6s", program_name);
@@ -618,7 +677,14 @@ int make_object_file(char* itm_file, char* asm_file, char* obj_file, char* lst_f
 			continue;
 		}
 		
-		fscanf(rp_itm, "%s %s %s %s", symbol, op, p1, p2);	
+		fscanf(rp_itm, "%s %s", symbol, op);
+		if(!strcmp(op, "BYTE"))
+		{
+			fscanf(rp_itm, "\t%[^.] %s", p1, p2);
+			p1[strlen(p1)-1] = '\0';
+		}
+		else fscanf(rp_itm, "%s %s", p1, p2);	
+
 		if(type == DIRECTIVE_)
 		{
 			if(!strcmp(op, "END"))
