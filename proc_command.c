@@ -240,7 +240,7 @@ int make_command(char* str, int* comm, int* para1, int* para2, int* para3, int* 
 		tsz = comment_tokenize(str, token);
 		if(tsz == 1) return 2;
 		for(i = 1; i < tsz; i++)
-			if(!is_in_dir(token[i])) return 6;
+			if(!is_in_dir(token[i]) || strcmp(token[i] + strlen(token[i]) - 4, ".obj")) return 6;
 	}
 	else if(tsz == -2) return 2;
 	else if(_comm == _DU || _comm == _DUMP)
