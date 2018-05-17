@@ -39,14 +39,3 @@ Assemble 명령어를 포함한 몇가지 명령어를 수행하는 Shell이 동
 ## Reference
 
 * Leland L. Beck, System Software: An Introduction to Systems Programming (3rd ed), Addison-Wesley
-
-
-
--------------------------------------------------
-
-* Writer: JungYeoun Sohn
-* Student ID: 20131565 (Sogang Univ.)
-* E-mail: sjy20131565@gmail.com
-* Date created: 2018/03/20
-
---------------------------------------------------
